@@ -930,6 +930,7 @@
 #define IDC_CHECK_SVN_TAG               1513
 #define IDC_RADIO_VERSION               1514
 #define IDC_GROUP_BRANCH                1515
+#define IDC_RADIO_ORPHANED              1516
 #define IDC_GROUP_OPTION                1517
 #define IDC_LABEL_BRANCH                1518
 #define IDC_BRANCH_TAG                  1519

@@ -113,6 +113,7 @@ BOOL CCreateBranchTagDlg::OnInitDialog()
 		sWindowTitle = CString(MAKEINTRESOURCE(IDS_PROGS_TITLE_CREATETAG));
 		this->GetDlgItem(IDC_LABEL_BRANCH)->SetWindowText(CString(MAKEINTRESOURCE(IDS_PROC_TAG)));
 		this->GetDlgItem(IDC_CHECK_SIGN)->EnableWindow(!g_Git.GetConfigValue(_T("user.signingkey")).IsEmpty());
+		this->GetDlgItem(IDC_RADIO_ORPHANED)->EnableWindow(FALSE);
 	}
 	else
 	{

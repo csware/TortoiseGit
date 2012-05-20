@@ -54,10 +54,14 @@ protected:
 		m_pWin->GetDlgItem(IDC_BUTTON_BROWSE_REF)->EnableWindow(FALSE);
 		m_pWin->GetDlgItem(IDC_BUTTON_SHOW)->EnableWindow(FALSE);
 		m_bIsBranch = false;
-		int radio=m_pWin->GetCheckedRadioButton(IDC_RADIO_HEAD,IDC_RADIO_VERSION);
+		m_bIsOrphaned = false;
+		int radio = m_pWin->GetCheckedRadioButton(IDC_RADIO_HEAD, IDC_RADIO_ORPHANED);
 		switch (radio)
 		{
 		case IDC_RADIO_HEAD:
+			break;
+		case IDC_RADIO_ORPHANED:
+			m_bIsOrphaned = true;
 			break;
 		case IDC_RADIO_BRANCH:
 			this->m_ChooseVersioinBranch.EnableWindow(TRUE);
@@ -202,6 +206,7 @@ protected:
 		m_ChooseVersioinTags.SetMaxHistoryItems(0x7FFFFFFF);
 
 		m_bIsBranch = false;
+		m_bIsOrphaned = false;
 		m_RadioBranch.EnableWindow(FALSE);
 		m_RadioTag.EnableWindow(FALSE);
 
@@ -225,6 +230,7 @@ protected:
 public:
 	CString m_VersionName;
 	bool	m_bIsBranch;
+	bool	m_bIsOrphaned;
 	CChooseVersion(CWnd *win)
 	{
 		m_pWin=win;
@@ -241,6 +247,7 @@ public:
 	DDX_Control(pDX, IDC_RADIO_TAGS, m_RadioTag);
 
 #define CHOOSE_VERSION_EVENT\
+	ON_BN_CLICKED(IDC_RADIO_ORPHANED,		OnBnClickedChooseRadioHost)\
 	ON_BN_CLICKED(IDC_RADIO_HEAD,			OnBnClickedChooseRadioHost)\
 	ON_BN_CLICKED(IDC_RADIO_BRANCH,			OnBnClickedChooseRadioHost)\
 	ON_BN_CLICKED(IDC_RADIO_TAGS,			OnBnClickedChooseRadioHost)\
