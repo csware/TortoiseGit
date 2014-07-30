@@ -1099,7 +1099,7 @@ bool CAppUtils::CreateBranchTag(bool IsTag,CString *CommitHash, bool switch_new_
 		if( !IsTag  &&  dlg.m_bSwitch )
 		{
 			// it is a new branch and the user has requested to switch to it
-			PerformSwitch(dlg.m_BranchTagName);
+			PerformSwitch(dlg.m_BranchTagName); // TODO: check fullref!
 		}
 
 		return TRUE;

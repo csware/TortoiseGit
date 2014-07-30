@@ -1359,7 +1359,7 @@ void CRevisionGraphWnd::DoUpdate()
 
 void CRevisionGraphWnd::DoSwitch(CString rev)
 {
-	CAppUtils::PerformSwitch(rev);
+	CAppUtils::PerformSwitch(rev); // is fullrev?
 }
 
 void CRevisionGraphWnd::DoSwitchToHead()

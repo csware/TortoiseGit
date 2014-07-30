@@ -439,15 +439,7 @@ void CGitLogList::ContextMenuAction(int cmd,int FirstSelect, int LastSelect, CMe
 			{
 				CString *branch = (CString*)((CIconMenu*)popmenu)->GetMenuItemData(cmd);
 				if(branch)
-				{
-					CString name;
-					if(branch->Find(_T("refs/heads/")) ==0 )
-						name = branch->Mid(11);
-					else
-						name = *branch;
-
-					CAppUtils::PerformSwitch(name);
-				}
+					CAppUtils::PerformSwitch(*branch);
 				ReloadHashMap();
 				Invalidate();
 				::PostMessage(this->GetParent()->m_hWnd,MSG_REFLOG_CHANGED,0,0);
@@ -841,7 +833,7 @@ void CGitLogList::ContextMenuAction(int cmd,int FirstSelect, int LastSelect, CMe
 				}
 				CString shortname;
 				CString cmd;
-				if (CGit::GetShortName(*branch, shortname, _T("refs/remotes/")))
+				if (CGit::GetShortName(*branch, shortname, _T("refs/remotes/"))) // TODO: check if it's really a git remote branch!
 				{
 					CString msg;
 					msg.Format(IDS_PROC_DELETEREMOTEBRANCH, *branch);
