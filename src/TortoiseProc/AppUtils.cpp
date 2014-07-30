@@ -2989,10 +2989,8 @@ BOOL CAppUtils::Merge(CString *commit)
 					msg.Format(IDS_PROC_DELETEBRANCHTAG, dlg.m_VersionName);
 					if (CMessageBox::Show(nullptr, msg, _T("TortoiseGit"), 2, IDI_QUESTION, CString(MAKEINTRESOURCE(IDS_DELETEBUTTON)), CString(MAKEINTRESOURCE(IDS_ABORTBUTTON))) == 1)
 					{
-						CString cmd, out;
-						cmd.Format(_T("git.exe branch -D -- %s"), dlg.m_VersionName);
-						if (g_Git.Run(cmd, &out, CP_UTF8))
-							MessageBox(nullptr, out, _T("TortoiseGit"), MB_OK);
+						if (g_Git.DeleteRef(dlg.m_VersionName))
+							MessageBox(nullptr, CGit::GetLibGit2LastErr(L"Could not delete branch."), _T("TortoiseGit"), MB_ICONERROR);
 					}
 				}));
 			}
