@@ -186,6 +186,8 @@ void CGitSwitchDlg::SetDefaultName(BOOL isUpdateCreateBranch)
 	this->UpdateRevsionName();
 
 	CString version = m_VersionName;
+	if (m_VersionName_ShortNameIsUnique)
+		version = CGit::GetShortName(version, nullptr);
 
 	int start = -1;
 	if (version.Left(7)==_T("origin/"))

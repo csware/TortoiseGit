@@ -1120,6 +1120,8 @@ bool CAppUtils::Switch(CString initialRefName)
 			branch = dlg.m_NewBranch;
 
 		// if refs/heads/ is not stripped, checkout will detach HEAD
+		if (dlg.m_VersionName_ShortNameIsUnique)
+			dlg.m_VersionName = CGit::GetShortName(dlg.m_VersionName, nullptr);
 		// checkout prefers branches on name clashes (with tags)
 		if (dlg.m_VersionName.Left(11) ==_T("refs/heads/") && dlg.m_bBranchOverride != TRUE)
 			dlg.m_VersionName = dlg.m_VersionName.Mid(11);
@@ -2941,6 +2943,9 @@ BOOL CAppUtils::Merge(CString *commit)
 			logmsg.Replace(_T("\""), _T("\\\""));
 			args += _T(" -m \"") + logmsg + _T("\"");
 		}
+		// use short names if possible, because merge adds nice default template messages (merged from "remote branch x" and "branch x")
+		if (dlg.m_VersionName_ShortNameIsUnique)
+			dlg.m_VersionName = CGit::GetShortName(dlg.m_VersionName, nullptr);
 		cmd.Format(_T("git.exe merge %s %s"), args, g_Git.FixBranchName(dlg.m_VersionName));
 
 		CProgressDlg Prodlg;

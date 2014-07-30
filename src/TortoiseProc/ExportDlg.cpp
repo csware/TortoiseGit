@@ -162,7 +162,9 @@ void CExportDlg::OnBnClickedCheckoutdirectoryBrowse()
 	// dialog controls.
 	//
 	this->UpdateRevsionName();
-	CFileDialog dlg(FALSE, _T("zip"), this->m_VersionName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("*.zip"));
+	CString shortVersion = CGit::GetShortName(m_VersionName, nullptr);
+	shortVersion.Replace(L"/", L"-");
+	CFileDialog dlg(FALSE, _T("zip"), shortVersion, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("*.zip"));
 
 	INT_PTR ret = dlg.DoModal();
 	SetCurrentDirectory(g_Git.m_CurrentDir);

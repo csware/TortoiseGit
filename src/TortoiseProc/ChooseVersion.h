@@ -110,12 +110,14 @@ protected:
 		case IDC_RADIO_BRANCH:
 			this->m_VersionName=m_ChooseVersioinBranch.GetString();
 			if (!m_VersionName.IsEmpty() && !g_Git.IsBranchTagNameUnique(this->m_VersionName))
-				this->m_VersionName = L"refs/heads/" + this->m_VersionName;
+				m_VersionName_ShortNameIsUnique = false;
+			m_VersionName = L"refs/heads/" + this->m_VersionName;
 			break;
 		case IDC_RADIO_TAGS:
 			this->m_VersionName = m_ChooseVersioinTags.GetString();
 			if (!m_VersionName.IsEmpty() && !g_Git.IsBranchTagNameUnique(this->m_VersionName))
-				this->m_VersionName = L"refs/tags/" + m_ChooseVersioinTags.GetString();
+				m_VersionName_ShortNameIsUnique = false;
+			m_VersionName = L"refs/tags/" + m_ChooseVersioinTags.GetString();
 			break;
 		case IDC_RADIO_VERSION:
 			this->m_VersionName=m_ChooseVersioinVersion.GetString();
@@ -257,6 +259,7 @@ protected:
 	}
 public:
 	CString m_VersionName;
+	bool	m_VersionName_ShortNameIsUnique;
 	bool	m_bIsBranch;
 	bool	m_bIsFirstTimeToSetFocus;
 	CChooseVersion(CWnd *win)
@@ -265,6 +268,7 @@ public:
 	, m_pLoadingThread(nullptr)
 	, m_bLoadingThreadRunning(FALSE)
 	, m_bNotFullName(true)
+	, m_VersionName_ShortNameIsUnique(true)
 	{
 		m_pWin=win;
 	};
