@@ -19,6 +19,7 @@
 //
 #pragma once
 #include "UnicodeUtils.h"
+#include <memory>
 
 /**
 * \ingroup Utils
@@ -154,22 +155,28 @@ protected:
 	ReferenceType* m_Ref;
 };
 
-class CAutoRepository : public CSmartLibgit2Ref<git_repository>
+class CAutoRepository
 {
 public:
-	CAutoRepository() {};
+	CAutoRepository()
+		: m_Ref(new Cgit_repository())
+	{
+	};
 
 	CAutoRepository(git_repository* h)
+		: m_Ref(new Cgit_repository())
 	{
-		m_Ref = h;
+		m_Ref.get()->repo = h;
 	}
 
 	CAutoRepository(const CString& gitDir)
+		: m_Ref(new Cgit_repository())
 	{
 		Open(gitDir);
 	}
 
 	CAutoRepository(const CStringA& gitDirA)
+		: m_Ref(new Cgit_repository())
 	{
 		Open(gitDirA);
 	}
@@ -181,20 +188,65 @@ public:
 
 	int Open(const CStringA& gitDirA)
 	{
-		CleanUp();
 		return git_repository_open(GetPointer(), gitDirA);
 	}
 
-	~CAutoRepository()
+	void Free()
 	{
-		CleanUp();
+		m_Ref.reset();
+	}
+
+	operator git_repository*()
+	{
+		return m_Ref.get()->repo;
+	}
+
+	/** Reset the current wrapped git_repository* reference and return a pointer to the wrapped git_repository* object
+	 * set bDoInit to true in order to issue git_libgit2_init on creation and git_libgit2_shutdown on destroy
+	 * needed for g_Git object which might be destroyed after e.g. CTortoiseProcApp
+	 */
+	git_repository** GetPointer(bool bDoInit = false)
+	{
+		m_Ref.reset(new Cgit_repository(bDoInit));
+		return &m_Ref.get()->repo;
+	}
+
+	operator bool()
+	{
+		return IsValid();
+	}
+
+	bool IsValid() const
+	{
+		return m_Ref.get()->repo != nullptr;
 	}
 
 protected:
-	virtual void FreeRef()
+	struct Cgit_repository
 	{
-		git_repository_free(m_Ref);
-	}
+		git_repository* repo;
+		bool m_bDoInit;
+		Cgit_repository(bool bDoInit = false)
+		{
+			repo = nullptr;
+			m_bDoInit = bDoInit;
+			if (m_bDoInit)
+				git_libgit2_init();
+		}
+		Cgit_repository(git_repository* h)
+		{
+			repo = h;
+			m_bDoInit = false;
+		}
+		~Cgit_repository()
+		{
+			git_repository_free(repo);
+			repo = nullptr;
+			if (m_bDoInit)
+				git_libgit2_shutdown();
+		}
+	};
+	std::tr1::shared_ptr<Cgit_repository> m_Ref;
 };
 
 class CAutoCommit : public CSmartLibgit2Ref<git_commit>

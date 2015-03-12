@@ -1198,10 +1198,11 @@ int CGit::RunLogFile(CString cmd, const CString &filename, CString *stdErr)
 	return exitcode;
 }
 
-git_repository * CGit::GetGitRepository() const
+CAutoRepository CGit::GetGitRepository()
 {
-	git_repository * repo = nullptr;
-	git_repository_open(&repo, GetGitPathStringA(m_CurrentDir));
+	if (repo)
+		return repo;
+	git_repository_open(repo.GetPointer(true), GetGitPathStringA(m_CurrentDir));
 	return repo;
 }
 
