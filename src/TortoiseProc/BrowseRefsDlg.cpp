@@ -1364,8 +1364,8 @@ bool CBrowseRefsDlg::PickRefForCombo(CComboBoxEx* pComboBox, int pickRef_Kind)
 		return false;
 	if(wcsncmp(resultRef,L"refs/",5)==0)
 		resultRef = resultRef.Mid(5);
-//	if(wcsncmp(resultRef,L"heads/",6)==0)
-//		resultRef = resultRef.Mid(6);
+	if (wcsncmp(resultRef, L"tags/", 5) == 0)
+		resultRef = resultRef.Mid(5);
 
 	//Find closest match of choice in combobox
 	int ixFound = -1;

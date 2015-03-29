@@ -497,7 +497,7 @@ void CPushDlg::OnBnClickedButtonBrowseSourceBranch()
 	{
 	case 0: /* Browse Refence*/
 		{
-			if(CBrowseRefsDlg::PickRefForCombo(&m_BranchSource, gPickRef_Head))
+			if(CBrowseRefsDlg::PickRefForCombo(&m_BranchSource, gPickRef_Head))//here
 				OnCbnSelchangeBranchSource();
 		}
 		break;

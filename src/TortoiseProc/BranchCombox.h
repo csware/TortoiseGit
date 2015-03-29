@@ -87,7 +87,7 @@ protected:
 	}
 	void  BnClickedButtonBrowseLocalBranch()
 	{
-		if(CBrowseRefsDlg::PickRefForCombo(&m_ctrlLocalBranch, m_LocalBranchFilter))
+		if(CBrowseRefsDlg::PickRefForCombo(&m_ctrlLocalBranch, m_LocalBranchFilter))//here
 			CbnSelchangeLocalBranch();
 	}
 	void  BnClickedButtonBrowseRemoteBranch()
@@ -121,7 +121,7 @@ protected:
 		}
 		else
 		{
-			if(CBrowseRefsDlg::PickRefForCombo(&m_ctrlRemoteBranch, m_RemoteBranchFilter))
+			if(CBrowseRefsDlg::PickRefForCombo(&m_ctrlRemoteBranch, m_RemoteBranchFilter))//here
 				CbnSelchangeRemoteBranch();
 		}
 	}
