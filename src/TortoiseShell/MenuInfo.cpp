@@ -110,6 +110,11 @@ MenuInfo menuInfo[] =
 
 	{ ShellSeparator, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, {0, 0} },
 
+	{ ShellMenuBisectStart, MENUCUSTOMCOMMAND, 0, IDS_MENUBISECTSTART, IDS_MENUDESCBISECTSTART,
+		{ ITEMIS_INGIT, 0 }, { ITEMIS_FOLDERINGIT, 0 }, { 0, 0 }, { 0, 0 } },
+
+	{ ShellSeparator, 0, 0, 0, 0, { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+
 	{ ShellMenuBisectStart,					MENUBISECT,	0,								IDS_MENUBISECTSTART,		IDS_MENUDESCBISECTSTART,
 		{ITEMIS_FOLDERINGIT|ITEMIS_ONLYONE, ITEMIS_BISECT|ITEMIS_MERGEACTIVE}, {0, 0}, {0, 0}, {0, 0} },
 
