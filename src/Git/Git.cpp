@@ -1198,12 +1198,18 @@ int CGit::RunLogFile(CString cmd, const CString &filename, CString *stdErr)
 	return exitcode;
 }
 
-CAutoRepository CGit::GetGitRepository()
+CAutoRepository CGit::GetGitRepository(bool noinit)
 {
-	if (repo)
-		return repo;
+	//if (repo)
+	//	return repo;
+	repo.Free();
 	git_repository_open(repo.GetPointer(true), GetGitPathStringA(m_CurrentDir));
 	return repo;
+}
+
+void CGit::FreeGitRepository()
+{
+	repo.Free();
 }
 
 int CGit::GetHash(git_repository * repo, CGitHash &hash, const CString& friendname, bool skipFastCheck /* = false */)

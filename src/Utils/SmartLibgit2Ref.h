@@ -193,7 +193,7 @@ public:
 
 	void Free()
 	{
-		m_Ref.reset();
+		m_Ref.reset(new Cgit_repository(false));
 	}
 
 	operator git_repository*()

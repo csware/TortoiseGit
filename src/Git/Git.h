@@ -191,7 +191,8 @@ public:
 	CString GetGitGlobalXDGConfigPath() const;
 	CString GetGitGlobalXDGConfig() const;
 	CString GetGitSystemConfig() const;
-	CAutoRepository GetGitRepository();
+	CAutoRepository GetGitRepository(bool noinit = false);
+	void FreeGitRepository();
 	static CStringA GetGitPathStringA(const CString &path);
 	static CString ms_LastMsysGitDir;	// the last msysgitdir added to the path, blank if none
 	static int ms_LastMsysGitVersion;

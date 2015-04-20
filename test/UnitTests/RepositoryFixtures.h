@@ -72,6 +72,7 @@ protected:
 	virtual void TearDown()
 	{
 		SetCurrentDirectory(CPathUtils::GetAppDirectory());
+		g_Git.FreeGitRepository();
 	}
 
 public:
