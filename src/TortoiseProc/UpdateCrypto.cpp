@@ -838,6 +838,11 @@ static int verify_signature_rsa(HCRYPTPROV hCryptProv, HCRYPTHASH hHash, public_
 	int i_n_len = min(mpi_len(p_pkey.key.sig.rsa.n), sizeof(p_pkey.key.sig.rsa.n) - 2);
 	int i_s_len = min(mpi_len(p_sig.algo_specific.rsa.s), sizeof(p_sig.algo_specific.rsa.s) - 2);
 
+	/*if (i_s_len > i_n_len)
+		return -1;*/
+
+	//EXPECT_EQ(512, i_s_len);
+
 	RSAKEY rsakey;
 	rsakey.blobheader.bType = PUBLICKEYBLOB; // 0x06
 	rsakey.blobheader.bVersion = CUR_BLOB_VERSION; // 0x02
@@ -926,59 +931,9 @@ int verify_signature(HCRYPTPROV hCryptProv, HCRYPTHASH hHash, public_key_t& p_ke
 /*
  * download a public key (the last one) from TortoiseGit server, and parse it
  */
-static public_key_t *download_key(const uint8_t *p_longid, const uint8_t *p_signature_issuer, CUpdateDownloader *updateDownloader)
+
+int VerifyIntegrity(const CString &filename, const CString &signatureFilename)
 {
-	ASSERT(updateDownloader);
-
-	CString url;
-	url.Format(L"http://download.tortoisegit.org/keys/%.2X%.2X%.2X%.2X%.2X%.2X%.2X%.2X.asc", p_longid[0], p_longid[1], p_longid[2], p_longid[3], p_longid[4], p_longid[5], p_longid[6], p_longid[7]);
-
-	CString tempfile = CTempFiles::Instance().GetTempFilePath(true).GetWinPathString();
-	if (updateDownloader->DownloadFile(url, tempfile, false))
-		return nullptr;
-
-	int size = 65536;
-	std::unique_ptr<char[]> buffer(new char[size]);
-	FILE * pFile = _tfsopen(tempfile, _T("rb"), SH_DENYWR);
-	if (pFile)
-	{
-		int length = 0;
-		if ((length = (int)fread(buffer.get(), sizeof(char), size, pFile)) >= 8)
-		{
-			fclose(pFile);
-			size = length;
-		}
-		else
-		{
-			fclose(pFile);
-			return nullptr;
-		}
-	}
-	else
-		return nullptr;
-
-	public_key_t *p_pkey = (public_key_t*) malloc(sizeof(public_key_t));
-	if (!p_pkey)
-	{
-		DeleteUrlCacheEntry(url);
-		return nullptr;
-	}
-
-	memcpy(p_pkey->longid, p_longid, 8);
-
-	if (parse_public_key((const uint8_t *)buffer.get(), size, p_pkey, p_signature_issuer))
-	{
-		free(p_pkey);
-		return nullptr;
-	}
-
-	return p_pkey;
-}
-
-int VerifyIntegrity(const CString &filename, const CString &signatureFilename, CUpdateDownloader *updateDownloader)
-{
-	ASSERT(updateDownloader);
-
 	signature_packet_t p_sig;
 	memset(&p_sig, 0, sizeof(signature_packet_t));
 	if (LoadSignature(signatureFilename, &p_sig))
@@ -1011,7 +966,7 @@ int VerifyIntegrity(const CString &filename, const CString &signatureFilename, C
 
 	if (memcmp(p_sig.issuer_longid, p_pkey.longid, 8) != 0)
 	{
-		public_key_t *p_new_pkey = download_key(p_sig.issuer_longid, tortoisegit_public_key_longid, updateDownloader);
+		public_key_t *p_new_pkey;// = download_key(p_sig.issuer_longid, tortoisegit_public_key_longid, updateDownloader);
 		if (!p_new_pkey)
 		{
 			if (p_sig.version == 4)

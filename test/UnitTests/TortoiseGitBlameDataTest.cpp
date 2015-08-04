@@ -18,11 +18,16 @@
 //
 
 #include "stdafx.h"
-#include "gtest/gtest.h"
+#include "DirFileEnum.h"
+#include "UpdateCrypto.h"
 
-int _tmain(int argc, _TCHAR* argv[])
+TEST(RSA, CheckSignatures)
 {
-	testing::InitGoogleTest(&argc, argv);
-	int result = RUN_ALL_TESTS();
-	return result;
+	CString fn = GetCommandLine();
+	int first = fn.Find(_T(' '));
+	if (first > 0) {
+		fn = fn.Mid(first).Trim(L"\"").Trim();
+	}
+	_wprintf_p(L"\n\"%s\"\n", fn);
+	EXPECT_FALSE(VerifyIntegrity(fn, fn + _T(".rsa.asc")));
 }

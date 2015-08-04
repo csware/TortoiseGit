@@ -19,6 +19,7 @@
 //
 
 #include <stdint.h>
+#include <wininet.h>
 #include <WinCrypt.h>
 #include "UpdateDownloader.h"
 
@@ -154,4 +155,4 @@ typedef struct _RSAKEY
 	BYTE n[4096 / 8];
 } RSAKEY;
 
-int VerifyIntegrity(const CString &filename, const CString &signatureFilename, CUpdateDownloader *updateDownloader);
+int VerifyIntegrity(const CString &filename, const CString &signatureFilename);
