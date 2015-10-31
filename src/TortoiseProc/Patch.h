@@ -24,12 +24,12 @@
 class CSendMailPatch : public CSendMailCombineable
 {
 public:
-	CSendMailPatch(const CString& To, const CString& CC, const CString& subject, bool bAttachment, bool bCombine);
+	CSendMailPatch(CString& To, CString& CC, CString& subject, bool bAttachment, bool bCombine, CString notes);
 	~CSendMailPatch(void);
 
 protected:
-	virtual int SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance);
-	virtual int SendAsCombinedMail(const CTGitPathList& list, CGitProgressList* instance);
+	virtual int SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance, bool includeNotes);
+	virtual int SendAsCombinedMail(CTGitPathList &list, CGitProgressList * instance);
 };
 
 class CPatch
@@ -38,7 +38,7 @@ public:
 	CPatch();
 	~CPatch(void);
 
-	int			Parse(const CString& pathfile, bool parseBody);
+	int			Parse(const CString& pathfile, bool parseBody, const CString* notes = nullptr);
 	CString		m_Author;
 	CString		m_Date;
 	CString		m_Subject;

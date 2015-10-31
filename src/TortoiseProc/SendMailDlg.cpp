@@ -57,6 +57,7 @@ void CSendMailDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX,IDC_SENDMAIL_SETUP, this->m_SmtpSetup);
 	DDX_Control(pDX,IDC_SENDMAIL_TO,m_ctrlTO);
 	DDX_Control(pDX,IDC_SENDMAIL_CC,m_ctrlCC);
+	DDX_Control(pDX, IDC_NOTES, m_cNotes);
 }
 
 
@@ -83,6 +84,7 @@ BOOL CSendMailDlg::OnInitDialog()
 	AddAnchor(IDC_SENDMAIL_SETUP,TOP_RIGHT);
 
 	AddAnchor(IDC_SENDMAIL_PATCHS,TOP_LEFT,BOTTOM_RIGHT);
+	AddAnchor(IDC_NOTES, BOTTOM_LEFT, BOTTOM_RIGHT);
 	AddAnchor(IDOK,BOTTOM_RIGHT);
 	AddAnchor(IDCANCEL,BOTTOM_RIGHT);
 	AddAnchor(IDHELP, BOTTOM_RIGHT);
@@ -124,6 +126,10 @@ BOOL CSendMailDlg::OnInitDialog()
 
 	if (m_PathList.GetCount() == 1)
 		m_ctrlList.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
+
+	m_ProjectProperties.ReadProps();
+	m_cNotes.Init(m_ProjectProperties);
+	m_cNotes.SetFont((CString)CRegString(_T("Software\\TortoiseGit\\LogFontName"), _T("Courier New")), (DWORD)CRegDWORD(_T("Software\\TortoiseGit\\LogFontSize"), 8));
 
 	this->UpdateData(FALSE);
 	OnBnClickedSendmailCombine();
@@ -181,6 +187,8 @@ void CSendMailDlg::OnBnClickedOk()
 			this->m_PathList.AddPath(path);
 		}
 	}
+
+	m_Notes = m_cNotes.GetText().Trim();
 
 	m_regAttach=m_bAttachment;
 	m_regCombine=m_bCombine;

@@ -25,20 +25,21 @@
 
 class CAppUtils;
 
-CSendMail::CSendMail(const CString& To, const CString& CC, bool bAttachment)
+CSendMail::CSendMail(CString& To, CString& CC, bool bAttachment, CString notes)
 {
 	m_sSenderName = g_Git.GetUserName();
 	m_sSenderMail = g_Git.GetUserEmail();
 	m_sTo = To;
 	m_sCC = CC;
 	m_bAttachment = bAttachment;
+	m_sNotes = notes;
 }
 
 CSendMail::~CSendMail(void)
 {
 }
 
-int CSendMail::SendMail(const CTGitPath &item, CGitProgressList * instance, const CString& FromName, const CString& FromMail, const CString& To, const CString& CC, const CString &subject, const CString& body, CStringArray &attachments)
+int CSendMail::SendMail(const CTGitPath &item, CGitProgressList * instance, CString &FromName, CString &FromMail, CString &To, CString &CC, CString &subject, CString &body, CStringArray &attachments)
 {
 	ASSERT(instance);
 	int retry = 0;
@@ -73,7 +74,7 @@ int CSendMail::SendMail(const CTGitPath &item, CGitProgressList * instance, cons
 	return -1;
 }
 
-int CSendMail::SendMail(const CString& FromName, const CString& FromMail, const CString& To, const CString& CC, const CString& subject, const CString& body, CStringArray &attachments, CString *errortext)
+int CSendMail::SendMail(CString &FromName, CString &FromMail, CString &To, CString &CC, CString &subject, CString &body, CStringArray &attachments, CString *errortext)
 {
 	if (CRegDWORD(_T("Software\\TortoiseGit\\TortoiseProc\\SendMail\\DeliveryType"), SEND_MAIL_MAPI) == SEND_MAIL_MAPI)
 	{
@@ -137,8 +138,8 @@ int CSendMail::SendMail(const CString& FromName, const CString& FromMail, const 
 	}
 }
 
-CSendMailCombineable::CSendMailCombineable(const CString& To, const CString& CC, const CString& subject, bool bAttachment, bool bCombine)
-	: CSendMail(To, CC, bAttachment)
+CSendMailCombineable::CSendMailCombineable(CString& To, CString& CC, CString& subject, bool bAttachment, bool bCombine, CString notes)
+	: CSendMail(To, CC, bAttachment, notes)
 	, m_sSubject(subject)
 	, m_bCombine(bCombine)
 {
@@ -148,7 +149,7 @@ CSendMailCombineable::~CSendMailCombineable()
 {
 }
 
-int CSendMailCombineable::Send(const CTGitPathList& list, CGitProgressList* instance)
+int CSendMailCombineable::Send(CTGitPathList &list, CGitProgressList * instance)
 {
 	if (m_bCombine)
 	{
@@ -160,7 +161,7 @@ int CSendMailCombineable::Send(const CTGitPathList& list, CGitProgressList* inst
 		for (int i = 0; i < list.GetCount(); ++i)
 		{
 			instance->SetItemProgress(i);
-			if (SendAsSingleMail((CTGitPath&)list[i], instance))
+			if (SendAsSingleMail((CTGitPath&)list[i], instance, i == 0))
 				return -1;
 		}
 		instance->SetItemProgress(list.GetCount() + 1);
@@ -169,7 +170,7 @@ int CSendMailCombineable::Send(const CTGitPathList& list, CGitProgressList* inst
 	return 0;
 }
 
-int GetFileContents(CString &filename, CString &content)
+int GetFileContents(const CString& filename, CString& content)
 {
 	CStdioFile file;
 	if (file.Open(filename, CFile::modeRead))
@@ -187,13 +188,18 @@ int GetFileContents(CString &filename, CString &content)
 		return -1;
 }
 
-int CSendMailCombineable::SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance)
+int CSendMailCombineable::SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance, bool includeNotes)
 {
 	ASSERT(instance);
 
 	CString pathfile(path.GetWinPathString());
 
 	CString body;
+	if (includeNotes)
+	{
+		body = m_sNotes;
+		body += _T("\n---\n");
+	}
 	CStringArray attachments;
 	if (m_bAttachment)
 		attachments.Add(pathfile);
@@ -206,12 +212,14 @@ int CSendMailCombineable::SendAsSingleMail(const CTGitPath& path, CGitProgressLi
 	return SendMail(path, instance, m_sSenderName, m_sSenderMail, m_sTo, m_sCC, m_sSubject, body, attachments);
 }
 
-int CSendMailCombineable::SendAsCombinedMail(const CTGitPathList &list, CGitProgressList* instance)
+int CSendMailCombineable::SendAsCombinedMail(CTGitPathList &list, CGitProgressList * instance)
 {
 	ASSERT(instance);
 
 	CStringArray attachments;
-	CString body;
+	CString body = m_sNotes;
+	if (!body.IsEmpty())
+		body += _T("\n\n");
 	for (int i = 0; i < list.GetCount(); ++i)
 	{
 		if (m_bAttachment)

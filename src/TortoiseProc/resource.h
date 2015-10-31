@@ -1521,6 +1521,7 @@
 #define IDC_DEFAULT_NUMBER_OF           1831
 #define IDC_DEFAULT_SCALE               1832
 #define IDC_STOREDDECISIONS             1833
+#define IDC_NOTES                       1834
 #define IDS_LOG_FILTER_BY               1850
 #define IDS_LOG_FILTER_PATHS            1851
 #define IDS_LOG_FILTER_AUTHORS          1852
@@ -1970,7 +1971,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        359
 #define _APS_NEXT_COMMAND_VALUE         32874
-#define _APS_NEXT_CONTROL_VALUE         1834
+#define _APS_NEXT_CONTROL_VALUE         1835
 #define _APS_NEXT_SYMED_VALUE           201
 #endif
 #endif

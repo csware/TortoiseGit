@@ -32,31 +32,32 @@ enum
 class CSendMail
 {
 protected:
-	static int SendMail(const CString& FromName, const CString& FromMail, const CString& To, const CString& CC, const CString& subject, const CString& body, CStringArray &attachments, CString *errortext);
-	static int SendMail(const CTGitPath &item, CGitProgressList* instance, const CString& FromName, const CString& FromMail, const CString& To, const CString& CC, const CString &subject, const CString& body, CStringArray &attachments);
+	static int SendMail(CString &FromName, CString &FromMail, CString &To, CString &CC, CString &subject, CString &body, CStringArray &attachments, CString *errortext);
+	static int SendMail(const CTGitPath &item, CGitProgressList * instance, CString &FromName, CString &FromMail, CString &To, CString &CC, CString &subject, CString &body, CStringArray &attachments);
 	CString	m_sSenderName;
 	CString	m_sSenderMail;
 	CString	m_sTo;
 	CString	m_sCC;
+	CString	m_sNotes;
 	bool	m_bAttachment;
 
 public:
-	CSendMail(const CString& To, const CString& CC, bool m_bAttachment);
+	CSendMail(CString& To, CString& CC, bool m_bAttachment, CString notes);
 	~CSendMail(void);
-	virtual int Send(const CTGitPathList& list, CGitProgressList* instance) = 0;
+	virtual int Send(CTGitPathList &list, CGitProgressList * instance) = 0;
 };
 
 class CSendMailCombineable : public CSendMail
 {
 public:
-	CSendMailCombineable(const CString& To, const CString& CC, const CString& subject, bool bAttachment, bool bCombine);
+	CSendMailCombineable(CString& To, CString& CC, CString& subject, bool bAttachment, bool bCombine, CString notes);
 	~CSendMailCombineable(void);
 
-	virtual int Send(const CTGitPathList& list, CGitProgressList* instance);
+	virtual int Send(CTGitPathList &list, CGitProgressList * instance);
 
 protected:
-	virtual int SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance);
-	virtual int SendAsCombinedMail(const CTGitPathList& list, CGitProgressList* instance);
+	virtual int SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance, bool includeNotes);
+	virtual int SendAsCombinedMail(CTGitPathList &list, CGitProgressList * instance);
 
 	CString	m_sSubject;
 	bool	m_bCombine;

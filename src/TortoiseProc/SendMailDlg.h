@@ -25,6 +25,7 @@
 #include "patch.h"
 #include "registry.h"
 #include "PatchListCtrl.h"
+#include "SciEdit.h"
 
 class CSendMailDlg : public CResizableStandAloneDialog
 {
@@ -54,6 +55,7 @@ public:
 	CString			m_To;
 	CString			m_CC;
 	CString			m_Subject;
+	CString			m_Notes;
 	BOOL			m_bCustomSubject;
 	BOOL			m_bAttachment;
 	BOOL			m_bCombine;
@@ -61,6 +63,9 @@ public:
 
 private:
 	CPatchListCtrl	m_ctrlList;
+
+	CSciEdit			m_cNotes;
+	ProjectProperties	m_ProjectProperties;
 
 	CRegDWORD		m_regAttach;
 	CRegDWORD		m_regCombine;

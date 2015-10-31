@@ -21,8 +21,8 @@
 #include "stdafx.h"
 #include "Patch.h"
 
-CSendMailPatch::CSendMailPatch(const CString& To, const CString& CC, const CString& subject, bool bAttachment, bool bCombine)
-	: CSendMailCombineable(To, CC, subject, bAttachment, bCombine)
+CSendMailPatch::CSendMailPatch(CString& To, CString& CC, CString& subject, bool bAttachment, bool bCombine, CString notes)
+	: CSendMailCombineable(To, CC, subject, bAttachment, bCombine, notes)
 {
 }
 
@@ -30,13 +30,13 @@ CSendMailPatch::~CSendMailPatch()
 {
 }
 
-int CSendMailPatch::SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance)
+int CSendMailPatch::SendAsSingleMail(const CTGitPath& path, CGitProgressList* instance, bool includeNotes)
 {
 	ASSERT(instance);
 
 	CString pathfile(path.GetWinPathString());
 	CPatch patch;
-	if (patch.Parse(pathfile, !m_bAttachment))
+	if (patch.Parse(pathfile, !m_bAttachment, includeNotes ? &m_sNotes : nullptr))
 	{
 		instance->ReportError(_T("Could not open/parse ") + pathfile);
 		return -2;
@@ -45,19 +45,25 @@ int CSendMailPatch::SendAsSingleMail(const CTGitPath& path, CGitProgressList* in
 	CString body;
 	CStringArray attachments;
 	if (m_bAttachment)
+	{
+		if (includeNotes)
+			body = m_sNotes;
 		attachments.Add(pathfile);
+	}
 	else
 		body = patch.m_strBody;
 
 	return SendMail(path, instance, m_sSenderName, m_sSenderMail, m_sTo, m_sCC, patch.m_Subject, body, attachments);
 }
 
-int CSendMailPatch::SendAsCombinedMail(const CTGitPathList &list, CGitProgressList* instance)
+int CSendMailPatch::SendAsCombinedMail(CTGitPathList &list, CGitProgressList * instance)
 {
 	ASSERT(instance);
 
 	CStringArray attachments;
-	CString body;
+	CString body = m_sNotes;
+	if (!body.IsEmpty())
+		body += _T("\r\n\r\n");
 	for (int i = 0; i < list.GetCount(); ++i)
 	{
 		CPatch patch;
@@ -96,7 +102,7 @@ CPatch::~CPatch()
 {
 }
 
-int CPatch::Parse(const CString& pathfile, bool parseBody)
+int CPatch::Parse(const CString& pathfile, bool parseBody, const CString* notes)
 {
 	m_PathFile = pathfile;
 
@@ -141,6 +147,18 @@ int CPatch::Parse(const CString& pathfile, bool parseBody)
 
 		if (!parseBody)
 			return 0;
+
+		if (notes && start >= 0)
+		{
+			int found = m_Body.Find("\n---\n", start);
+			if (found > 0)
+			{
+				CGit::StringAppend(&m_strBody, (BYTE*)(LPCSTR)m_Body + start + 1, CP_UTF8, found - start - 1);
+				m_strBody += _T("\n---\n"); 
+				m_strBody += *notes;
+				start = found - 1;
+			}
+		}
 
 		if (start + 1 < m_Body.GetLength())
 			CGit::StringAppend(&m_strBody, (BYTE*)(LPCSTR)m_Body + start + 1, CP_UTF8, m_Body.GetLength() - start - 1);
