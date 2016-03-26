@@ -271,8 +271,7 @@ static bool DoCleanUp(const CTGitPathList& pathList, int cleanType, bool bDir, b
 
 		for (CString dir : submoduleList)
 		{
-			CGit git;
-			git.m_CurrentDir = dir;
+			CGit git(dir);
 			if (!GetFilesToCleanUp(delList, cmd, &git, _T(""), quotepath, sysProgressDlg))
 				return false;
 		}

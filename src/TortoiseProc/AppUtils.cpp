@@ -1115,12 +1115,9 @@ bool CAppUtils::Export(const CString* BashHash, const CTGitPath* orgPath)
 			postCmdList.emplace_back(IDI_EXPLORER, IDS_STATUSLIST_CONTEXT_EXPLORE, [&]{ CAppUtils::ExploreTo(hWndExplorer, dlg.m_strFile); });
 		};
 
-		CGit git;
+		CGit git(dlg.m_orgPath.GetWinPathString());
 		if (!dlg.m_bWholeProject && !dlg.m_orgPath.IsEmpty() && PathIsDirectory(dlg.m_orgPath.GetWinPathString()))
-		{
-			git.m_CurrentDir = dlg.m_orgPath.GetWinPathString();
 			pro.m_Git = &git;
-		}
 		return (pro.DoModal() == IDOK);
 	}
 	return false;
@@ -1667,8 +1664,7 @@ bool CAppUtils::ConflictEdit(const CTGitPath& path, bool /*bAlternativeTool = fa
 	{
 		CString baseHash, realBaseHash(GIT_REV_ZERO), localHash(GIT_REV_ZERO), remoteHash(GIT_REV_ZERO);
 		if (merge.HasAdminDir()) {
-			CGit subgit;
-			subgit.m_CurrentDir = g_Git.CombinePath(merge);
+			CGit subgit(g_Git.CombinePath(merge));
 			CGitHash hash;
 			subgit.GetHash(hash, _T("HEAD"));
 			baseHash = hash;
@@ -3621,8 +3617,7 @@ int CAppUtils::ResolveConflict(CTGitPath& path, resolve_with resolveWith)
 				MessageBox(nullptr, err, _T("TortoiseGit"), MB_ICONERROR);
 				return -1;
 			}
-			CGit subgit;
-			subgit.m_CurrentDir = g_Git.CombinePath(path);
+			CGit subgit(g_Git.CombinePath(path));
 			CGitHash submoduleHead;
 			if (subgit.GetHash(submoduleHead, _T("HEAD")))
 			{

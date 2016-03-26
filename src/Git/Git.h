@@ -247,6 +247,7 @@ public:
 	PROCESS_INFORMATION m_CurrentGitPi;
 
 	CGit(void);
+	CGit(const CString& subgit);
 	~CGit(void);
 
 	int Run(CString cmd, CString* output, int code);
@@ -256,6 +257,7 @@ public:
 	int Run(CString cmd, const GitReceiverFunc& recv, CString* outputErr = nullptr);
 
 private:
+	static bool ms_g_GitInited;
 	static DWORD WINAPI AsyncReadStdErrThread(LPVOID lpParam);
 	typedef struct AsyncReadStdErrThreadArguments
 	{

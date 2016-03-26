@@ -201,11 +201,15 @@ CString CGit::ms_LastMsysGitDir;
 CString CGit::ms_MsysGitRootDir;
 int CGit::ms_LastMsysGitVersion = 0;
 #endif
+bool CGit::ms_g_GitInited = false;
 CGit g_Git;
 
 
 CGit::CGit(void)
 {
+	ASSERT("use the other constructor for temporary CGit objects" && !ms_g_GitInited);
+	ms_g_GitInited = true;
+
 	git_libgit2_init();
 #if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 	GetCurrentDirectory(MAX_PATH, CStrBuf(m_CurrentDir, MAX_PATH));
@@ -224,6 +228,21 @@ CGit::CGit(void)
 	m_critGitDllSec.Init();
 #endif
 	//SetupMsysGitDir();
+}
+
+CGit::CGit(const CString& anotherdir)
+{
+	ASSERT("there must be a g_Git object!" && ms_g_GitInited);
+	m_CurrentDir = anotherdir;
+	m_bInitialized = TRUE;
+	m_IsUseGitDLL = !!CRegDWORD(_T("Software\\TortoiseGit\\UsingGitDLL"), 1);
+	m_IsUseLibGit2 = !!CRegDWORD(_T("Software\\TortoiseGit\\UseLibgit2"), TRUE);
+	m_IsUseLibGit2_mask = CRegDWORD(_T("Software\\TortoiseGit\\UseLibgit2_mask"), DEFAULT_USE_LIBGIT2_MASK);
+	SecureZeroMemory(&m_CurrentGitPi, sizeof(PROCESS_INFORMATION));
+	m_IsGitDllInited = false;
+	m_GitDiff = 0;
+	m_GitSimpleListDiff = 0;
+	m_Environment = g_Git.m_Environment;
 }
 
 CGit::~CGit(void)
@@ -680,7 +699,12 @@ CString CGit::GetConfigValue(const CString& name, const CString& def, bool wantB
 	if(this->m_IsUseGitDLL)
 	{
 		CAutoLocker lock(g_Git.m_critGitDllSec);
-
+		if (this != &g_Git)
+			SetCurrentDirectory(m_CurrentDir);
+		SCOPE_EXIT{
+			if (this != &g_Git)
+			SetCurrentDirectory(g_Git.m_CurrentDir);
+		};
 		try
 		{
 			CheckAndInitDll();//TODO
@@ -741,7 +765,12 @@ int CGit::SetConfigValue(const CString& key, const CString& value, CONFIG_TYPE t
 	if(this->m_IsUseGitDLL)
 	{
 		CAutoLocker lock(g_Git.m_critGitDllSec);
-
+		if (this != &g_Git)
+			SetCurrentDirectory(m_CurrentDir);
+		SCOPE_EXIT{
+			if (this != &g_Git)
+			SetCurrentDirectory(g_Git.m_CurrentDir);
+		};
 		try
 		{
 			CheckAndInitDll();//TODO
@@ -790,30 +819,6 @@ int CGit::SetConfigValue(const CString& key, const CString& value, CONFIG_TYPE t
 
 int CGit::UnsetConfigValue(const CString& key, CONFIG_TYPE type)
 {
-	if(this->m_IsUseGitDLL)
-	{
-		CAutoLocker lock(g_Git.m_critGitDllSec);
-
-		try
-		{
-			CheckAndInitDll();//TODO
-		}catch(...)
-		{
-		}
-		CStringA keya;
-		keya = CUnicodeUtils::GetMulti(key, CP_UTF8);
-
-		try
-		{
-			return [=]() { return get_set_config(keya, nullptr, type); }();
-		}
-		catch (const char *msg)
-		{
-			::MessageBox(nullptr, _T("Could not unset config.\nlibgit reports:\n") + CString(msg), _T("TortoiseGit"), MB_OK | MB_ICONERROR);
-			return -1;
-		}
-	}
-	else
 	{
 		CString cmd;
 		CString option;
@@ -2460,6 +2465,7 @@ unsigned int CGit::Hash2int(const CGitHash &hash)
 
 int CGit::RefreshGitIndex()
 {
+	ASSERT(this == &g_Git);
 	if(g_Git.m_IsUseGitDLL)
 	{
 		CAutoLocker lock(g_Git.m_critGitDllSec);
@@ -2534,6 +2540,12 @@ int CGit::GetOneFile(const CString &Refname, const CTGitPath &path, const CStrin
 		CAutoLocker lock(g_Git.m_critGitDllSec);
 		try
 		{
+			if (this != &g_Git)
+				SetCurrentDirectory(m_CurrentDir);
+			SCOPE_EXIT{
+				if (this != &g_Git)
+				SetCurrentDirectory(g_Git.m_CurrentDir);
+			};
 			CheckAndInitDll();//TODO
 			CStringA ref, patha, outa;
 			ref = CUnicodeUtils::GetMulti(Refname, CP_UTF8);

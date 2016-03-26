@@ -276,6 +276,9 @@ void CSetMainPage::OnCheck()
 	Store(m_sMsysGitPath, m_regMsysGitPath);
 	Store(m_sMsysGitExtranPath, m_regMsysGitExtranPath);
 
+	CGit test;
+
+	// TODO: needs rewrite to not fuck with g_Git!!!
 	g_Git.m_bInitialized = false;
 
 	if (g_Git.CheckMsysGitDir(FALSE))

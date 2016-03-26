@@ -652,8 +652,7 @@ void CCommitDlg::OnOK()
 		bool dirty = false;
 		if (entry->m_Action & CTGitPath::LOGACTIONS_UNVER)
 		{
-			CGit subgit;
-			subgit.m_CurrentDir = g_Git.CombinePath(entry);
+			CGit subgit(g_Git.CombinePath(entry));
 			CString subcmdout;
 			subgit.Run(_T("git.exe status --porcelain"), &subcmdout, CP_UTF8);
 			dirty = !subcmdout.IsEmpty();

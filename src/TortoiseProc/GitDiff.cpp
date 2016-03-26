@@ -62,8 +62,7 @@ int CGitDiff::SubmoduleDiffNull(const CTGitPath * pPath, const git_revnum_t &rev
 		if(start>0)
 			newhash=output.Mid(start+1, 40);
 
-		CGit subgit;
-		subgit.m_CurrentDir = g_Git.CombinePath(pPath);
+		CGit subgit(g_Git.CombinePath(pPath));
 		int encode=CAppUtils::GetLogOutputEncode(&subgit);
 
 		cmd.Format(_T("git.exe log -n1 --pretty=format:\"%%s\" %s --"), (LPCTSTR)newhash);
@@ -274,8 +273,7 @@ int CGitDiff::SubmoduleDiff(const CTGitPath * pPath, const CTGitPath * /*pPath2*
 	CString newsub;
 	bool oldOK = false, newOK = false;
 
-	CGit subgit;
-	subgit.m_CurrentDir = g_Git.CombinePath(pPath);
+	CGit subgit(g_Git.CombinePath(pPath));
 	ChangeType changeType = Unknown;
 
 	if (pPath->HasAdminDir())

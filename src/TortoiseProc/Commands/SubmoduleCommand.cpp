@@ -65,10 +65,8 @@ bool SubmoduleAddCommand::Execute()
 		{
 			if (dlg.m_bAutoloadPuttyKeyFile)
 			{
-				SetCurrentDirectory(g_Git.m_CurrentDir);
-				CGit subgit;
 				dlg.m_strPath.Replace(_T('/'), _T('\\'));
-				subgit.m_CurrentDir = PathIsRelative(dlg.m_strPath) ? g_Git.CombinePath(dlg.m_strPath) : dlg.m_strPath;
+				CGit subgit(PathIsRelative(dlg.m_strPath) ? g_Git.CombinePath(dlg.m_strPath) : dlg.m_strPath);
 
 				if (subgit.SetConfigValue(_T("remote.origin.puttykeyfile"), dlg.m_strPuttyKeyFile, CONFIG_LOCAL))
 				{
