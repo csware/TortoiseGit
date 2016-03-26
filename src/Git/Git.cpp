@@ -631,7 +631,7 @@ CString CGit::GetConfigValue(const CString& name, const CString& def, bool wantB
 
 		try
 		{
-			CheckAndInitDll();
+			CheckAndInitDll();//TODO
 		}catch(...)
 		{
 		}
@@ -692,7 +692,7 @@ int CGit::SetConfigValue(const CString& key, const CString& value, CONFIG_TYPE t
 
 		try
 		{
-			CheckAndInitDll();
+			CheckAndInitDll();//TODO
 		}catch(...)
 		{
 		}
@@ -732,7 +732,7 @@ int CGit::SetConfigValue(const CString& key, const CString& value, CONFIG_TYPE t
 		CString out;
 		if (Run(cmd, &out, nullptr, CP_UTF8))
 			return -1;
-	}
+		}
 	return 0;
 }
 
@@ -744,7 +744,7 @@ int CGit::UnsetConfigValue(const CString& key, CONFIG_TYPE type)
 
 		try
 		{
-			CheckAndInitDll();
+			CheckAndInitDll();//TODO
 		}catch(...)
 		{
 		}
@@ -780,7 +780,7 @@ int CGit::UnsetConfigValue(const CString& key, CONFIG_TYPE type)
 		CString out;
 		if (Run(cmd, &out, nullptr, CP_UTF8))
 			return -1;
-	}
+		}
 	return 0;
 }
 
@@ -1640,15 +1640,15 @@ int CGit::GetBranchList(STRING_VECTOR &list,int *current,BRANCH_TYPE type)
 				branch = branch.Mid(2);
 				cur = branch;
 
-				// check whether HEAD is detached
-				CString currentHead;
+					// check whether HEAD is detached
+					CString currentHead;
 				if (branch[0] == L'(' && GetCurrentBranchFromFile(m_CurrentDir, currentHead) == 1)
-				{
-					headIsDetached = true;
+					{
+						headIsDetached = true;
 					return;
+					}
 				}
-			}
-			if ((type & BRANCH_REMOTE) != 0 && (type & BRANCH_LOCAL) == 0)
+				if ((type & BRANCH_REMOTE) != 0 && (type & BRANCH_LOCAL) == 0)
 				branch = L"remotes/" + branch;
 			list.push_back(branch);
 		});
@@ -1842,14 +1842,14 @@ int CGit::GetRefList(STRING_VECTOR &list)
 			return;
 
 		CString name = CUnicodeUtils::GetUnicode(lineA.Mid(start + 1));
-		if (list.empty() || name != *list.crbegin() + _T("^{}"))
-			list.push_back(name);
+					if (list.empty() || name != *list.crbegin() + _T("^{}"))
+						list.push_back(name);
 	});
 	if (!ret)
-		std::sort(list.begin() + prevCount, list.end(), LogicalComparePredicate);
-	else if (ret == 1 && IsInitRepos())
-		return 0;
-	return ret;
+			std::sort(list.begin() + prevCount, list.end(), LogicalComparePredicate);
+		else if (ret == 1 && IsInitRepos())
+			return 0;
+		return ret;
 }
 
 typedef struct map_each_ref_payload {
@@ -1926,8 +1926,8 @@ int CGit::GetMapHashToFriendName(MAP_HASH_NAME &map)
 	});
 
 	if (ret == 1 && IsInitRepos())
-		return 0;
-	return ret;
+			return 0;
+		return ret;
 }
 
 int CGit::GetBranchDescriptions(MAP_STRING_STRING& map)
@@ -2471,7 +2471,7 @@ int CGit::GetOneFile(const CString &Refname, const CTGitPath &path, const CStrin
 		CAutoLocker lock(g_Git.m_critGitDllSec);
 		try
 		{
-			g_Git.CheckAndInitDll();
+			CheckAndInitDll();//TODO
 			CStringA ref, patha, outa;
 			ref = CUnicodeUtils::GetMulti(Refname, CP_UTF8);
 			patha = CUnicodeUtils::GetMulti(path.GetGitPathString(), CP_UTF8);

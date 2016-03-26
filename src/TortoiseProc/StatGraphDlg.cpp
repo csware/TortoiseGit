@@ -443,14 +443,7 @@ int CStatGraphDlg::GetCalendarWeek(const CTime& time)
 				dDateFirstJanuary = CTime(iYear+1,1,1,0,0,0);
 
 				// Get start of week
-				try
-				{
-					iDayOfWeek = (time.GetDayOfWeek()+5+iFirstDayOfWeek)%7;
-				}
-				catch (CException* e)
-				{
-					e->Delete();
-				}
+				iDayOfWeek = (time.GetDayOfWeek() + 5 + iFirstDayOfWeek) % 7;
 				CTime dStartOfWeek = time-CTimeSpan(iDayOfWeek,0,0,0);
 
 				// If this week spans over to 1/1 this is week 1

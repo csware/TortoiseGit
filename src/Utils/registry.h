@@ -371,6 +371,7 @@ public:
 
     operator const T&();
     CRegTypedBase<T,Base>& operator=(const T& rhs);
+//	virtual ~CRegTypedBase();
 };
 
 // implement CRegTypedBase<> members
@@ -684,6 +685,7 @@ private:
 
 public:
     CRegStringCommon();
+//	virtual ~CRegStringCommon();
     /**
      * Constructor.
      * \param key the path to the key, including the key. example: "Software\\Company\\SubKey\\MyValue"

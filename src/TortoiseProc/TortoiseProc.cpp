@@ -449,10 +449,13 @@ BOOL CTortoiseProcApp::InitInstance()
 	InitializeJumpList(sAppID);
 	EnsureGitLibrary(false);
 
+	if (GitAdminDir::IsWorkingTreeOrBareRepo(g_Git.m_CurrentDir))
 	{
 		CString err;
 		try
 		{
+			g_Git.CheckAndInitDll();
+
 			// requires CWD to be set
 			CGit::m_LogEncode = CAppUtils::GetLogOutputEncode();
 

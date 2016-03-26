@@ -2920,7 +2920,7 @@ UINT CGitLogListBase::LogThread()
 			{
 				git_get_notes(commit.m_hash, &note);
 			}
-			catch (char* msg)
+			catch (const char* msg)
 			{
 				g_Git.m_critGitDllSec.Unlock();
 				CString err(msg);
