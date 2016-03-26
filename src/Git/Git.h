@@ -191,6 +191,7 @@ public:
 	}
 
 	BOOL CheckMsysGitDir(BOOL bFallback = TRUE);
+	void SetupLibgit2Filter();
 	BOOL FindAndSetGitExePath(BOOL bFallback);
 	BOOL m_bInitialized;
 

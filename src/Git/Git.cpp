@@ -223,6 +223,7 @@ CGit::CGit(void)
 	CheckMsysGitDir();
 	m_critGitDllSec.Init();
 #endif
+	//SetupMsysGitDir();
 }
 
 CGit::~CGit(void)
@@ -2002,7 +2003,6 @@ int CGit::GetBranchDescriptions(MAP_STRING_STRING& map)
 	}, &map);
 }
 #endif
-#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 static void SetLibGit2SearchPath(int level, const CString &value)
 {
 	CStringA valueA = CUnicodeUtils::GetMulti(value, CP_UTF8);
@@ -2014,7 +2014,6 @@ static void SetLibGit2TemplatePath(const CString &value)
 	CStringA valueA = CUnicodeUtils::GetMulti(value, CP_UTF8);
 	git_libgit2_opts(GIT_OPT_SET_TEMPLATE_PATH, valueA);
 }
-#endif
 #if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 int CGit::FindAndSetGitExePath(BOOL bFallback)
 {
@@ -2085,6 +2084,7 @@ BOOL CGit::CheckMsysGitDir(BOOL bFallback)
 	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": CheckMsysGitDir(%d)\n"), bFallback);
 	this->m_Environment.clear();
 	m_Environment.CopyProcessEnvironment();
+	m_Environment.SetEnv(_T("GIT_WORK_TREE"), nullptr); // Remove %GIT_DIR% before executing git.exe
 
 	// set HOME if not set already
 	size_t homesize;
@@ -2178,41 +2178,44 @@ BOOL CGit::CheckMsysGitDir(BOOL bFallback)
 	m_Environment.AddToPath(CGit::ms_LastMsysGitDir);
 	m_Environment.AddToPath((CString)CRegString(REG_MSYSGIT_EXTRA_PATH, _T(""), FALSE));
 
-#if !defined(TGITCACHE) && !defined(TORTOISESHELL)
-	// register filter only once
-	if (!git_filter_lookup("filter"))
-	{
-		CString sh;
-		for (const CString& binDirPrefix : { L"\\..\\usr\\bin", L"\\..\\bin", L"" })
-		{
-			CString possibleShExe = CGit::ms_LastMsysGitDir + binDirPrefix + L"\\sh.exe";
-			if (PathFileExists(possibleShExe))
-			{
-				CString temp;
-				PathCanonicalize(CStrBuf(temp, MAX_PATH), possibleShExe);
-				sh.Format(L"\"%s\"", (LPCTSTR)temp);
-				// we need to put the usr\bin folder on the path for Git for Windows based on msys2
-				m_Environment.AddToPath(temp.Left(temp.GetLength() - 7)); // 7 = len("\\sh.exe")
-				break;
-			}
-		}
-
-		// Add %GIT_EXEC_PATH% to %PATH% when launching libgit2 filter executable
-		// It is possible that the filter points to a git subcommand, that is located at libexec\git-core
-		CString gitExecPath = CGit::ms_MsysGitRootDir;
-		gitExecPath.Append(_T("libexec\\git-core"));
-		m_Environment.AddToPath(gitExecPath);
-
-		if (git_filter_register("filter", git_filter_filter_new(sh, m_Environment), GIT_FILTER_DRIVER_PRIORITY))
-			return FALSE;
-	}
-#endif
+	SetupLibgit2Filter();
 
 	m_bInitialized = TRUE;
 	return true;
 }
 #endif
+void CGit::SetupLibgit2Filter()
+{
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL)
+	// register filter only once
+	if (git_filter_lookup("filter") && git_filter_unregister("filter") < 0)
+		return;
 
+	CString sh;
+	for (const CString& binDirPrefix : { L"\\..\\usr\\bin", L"\\..\\bin", L"" })
+	{
+		CString possibleShExe = ms_LastMsysGitDir + binDirPrefix + L"\\sh.exe";
+		if (PathFileExists(possibleShExe))
+		{
+			CString temp;
+			PathCanonicalize(CStrBuf(temp, MAX_PATH), possibleShExe);
+			sh.Format(L"\"%s\"", (LPCTSTR)temp);
+			// we need to put the usr\bin folder on the path for Git for Windows based on msys2
+			m_Environment.AddToPath(temp.Left(temp.GetLength() - 7)); // 7 = len("\\sh.exe")
+			break;
+		}
+	}
+
+	// Add %GIT_EXEC_PATH% to %PATH% when launching libgit2 filter executable
+	// It is possible that the filter points to a git subcommand, that is located at libexec\git-core
+	CString gitExecPath = ms_MsysGitRootDir;
+	gitExecPath.Append(_T("libexec\\git-core"));
+	m_Environment.AddToPath(gitExecPath);
+
+	if (git_filter_register("filter", git_filter_filter_new(sh, m_Environment), GIT_FILTER_DRIVER_PRIORITY))
+		return;
+#endif
+}
 CString CGit::GetHomeDirectory() const
 {
 	const wchar_t * homeDir = wget_windows_home_directory();
