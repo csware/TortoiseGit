@@ -449,24 +449,8 @@ BOOL CTortoiseProcApp::InitInstance()
 	InitializeJumpList(sAppID);
 	EnsureGitLibrary(false);
 
-	if (GitAdminDir::IsWorkingTreeOrBareRepo(g_Git.m_CurrentDir))
 	{
-		CString err;
-		try
-		{
-			g_Git.CheckAndInitDll();
-
-			// requires CWD to be set
-			CGit::m_LogEncode = CAppUtils::GetLogOutputEncode();
-
-			// make sure all config files are read in order to check that none contains an error
-			g_Git.GetConfigValue(_T("doesnot.exist"));
-		}
-		catch (char* msg)
-		{
-			err = CString(msg);
-		}
-
+		CString err = g_Git.CheckGitConfig();
 		if (!err.IsEmpty())
 		{
 			UINT choice = CMessageBox::Show(hWndExplorer, err, _T("TortoiseGit"), 1, IDI_ERROR, CString(MAKEINTRESOURCE(IDS_PROC_EDITLOCALGITCONFIG)), CString(MAKEINTRESOURCE(IDS_PROC_EDITGLOBALGITCONFIG)), CString(MAKEINTRESOURCE(IDS_ABORTBUTTON)));
@@ -482,6 +466,9 @@ BOOL CTortoiseProcApp::InitInstance()
 			}
 			return FALSE;
 		}
+
+		// requires CWD to be set
+		CGit::m_LogEncode = CAppUtils::GetLogOutputEncode();
 	}
 
 	// execute the requested command

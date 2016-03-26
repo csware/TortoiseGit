@@ -622,6 +622,44 @@ CString CGit::GetUserEmail(void)
 	return GetConfigValue(L"user.email");
 }
 
+CString CGit::CheckGitConfig()
+{
+	try
+	{
+		if (!m_IsUseGitDLL)
+		{
+			// make sure all config files are read in order to check that none contains an error
+			CAutoLocker lock(m_critGitDllSec);
+			CStringA value;
+			git_get_config("doesnot.exist", CStrBufA(value, 4096), 4096);
+		}
+		else
+		{
+			CString err;
+			if (Run(L"git.exe diff HEAD..HEAD", &err, CP_UTF8)) // TODO
+				return L"";
+		}
+	}
+	catch (const char* msg)
+	{
+		return CString(msg);
+	}
+
+	if (GitAdminDir::IsWorkingTreeOrBareRepo(m_CurrentDir))
+	{
+		try
+		{
+			// do libgit initialization checks
+			CheckAndInitDll();
+		}
+		catch (const char* msg)
+		{
+			return CString(msg);
+		}
+	}
+	return L"";
+}
+
 CString CGit::GetConfigValue(const CString& name, const CString& def, bool wantBool)
 {
 	CString configValue;
