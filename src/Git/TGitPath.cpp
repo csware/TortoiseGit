@@ -1043,6 +1043,7 @@ int CTGitPathList::ParserFromLsFile(BYTE_VECTOR &out,bool /*staged*/)
 	}
 	return 0;
 }
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 int CTGitPathList::FillUnRev(unsigned int action, CTGitPathList *list, CString *err)
 {
 	this->Clear();
@@ -1310,7 +1311,7 @@ int CTGitPathList::ParserFromLog(BYTE_VECTOR &log, bool parseDeletes /*false*/)
 	}
 	return 0;
 }
-
+#endif
 void CTGitPathList::AddPath(const CTGitPath& newPath)
 {
 	m_paths.push_back(newPath);

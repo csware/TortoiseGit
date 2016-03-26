@@ -33,6 +33,7 @@
 #include "../libgit2/filter-filter.h"
 #include "../libgit2/ssh-wintunnel.h"
 
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 bool CGit::ms_bCygwinGit = (CRegDWORD(_T("Software\\TortoiseGit\\CygwinHack"), FALSE) == TRUE);
 bool CGit::ms_bMsys2Git = (CRegDWORD(_T("Software\\TortoiseGit\\Msys2Hack"), FALSE) == TRUE);
 int CGit::m_LogEncode=CP_UTF8;
@@ -192,18 +193,21 @@ static int LogicalCompareBranchesPredicate(const CString &left, const CString &r
 		return StrCmpLogicalW(left, right) < 0;
 	return StrCmpI(left, right) < 0;
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL)
 #define CALL_OUTPUT_READ_CHUNK_SIZE 1024
 
 CString CGit::ms_LastMsysGitDir;
 CString CGit::ms_MsysGitRootDir;
 int CGit::ms_LastMsysGitVersion = 0;
+#endif
 CGit g_Git;
 
 
 CGit::CGit(void)
 {
 	git_libgit2_init();
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 	GetCurrentDirectory(MAX_PATH, CStrBuf(m_CurrentDir, MAX_PATH));
 	m_IsGitDllInited = false;
 	m_GitDiff=0;
@@ -218,6 +222,7 @@ CGit::CGit(void)
 	this->m_bInitialized =false;
 	CheckMsysGitDir();
 	m_critGitDllSec.Init();
+#endif
 }
 
 CGit::~CGit(void)
@@ -235,6 +240,7 @@ CGit::~CGit(void)
 	git_libgit2_shutdown();
 }
 
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 bool CGit::IsBranchNameValid(const CString& branchname)
 {
 	if (branchname.Left(1) == _T("-")) // branch names starting with a dash are discouraged when used with git.exe, see https://github.com/git/git/commit/6348624010888bd2353e5cebdc2b5329490b0f6d
@@ -364,6 +370,7 @@ int CGit::RunAsync(CString cmd, PROCESS_INFORMATION *piOut, HANDLE *hReadOut, HA
 		*hErrReadOut = hReadErr.Detach();
 	return 0;
 }
+#endif
 //Must use sperate function to convert ANSI str to union code string
 //Becuase A2W use stack as internal convert buffer.
 void CGit::StringAppend(CString *str, const BYTE *p, int code,int length)
@@ -383,7 +390,7 @@ void CGit::StringAppend(CString *str, const BYTE *p, int code,int length)
 	int appendedLen = MultiByteToWideChar(code, 0, (LPCSTR)p, len, buf, len * 4);
 	str->ReleaseBuffer(currentContentLen + appendedLen); // no - 1 because MultiByteToWideChar is called with a fixed length (thus no nul char included)
 }
-
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 // This method was originally used to check for orphaned branches
 BOOL CGit::CanParseRev(CString ref)
 {
@@ -407,7 +414,8 @@ BOOL CGit::IsInitRepos()
 		return FALSE;
 	return hash.IsEmpty() ? TRUE : FALSE;
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL)
 DWORD WINAPI CGit::AsyncReadStdErrThread(LPVOID lpParam)
 {
 	PASYNCREADSTDERRTHREADARGS pDataArray;
@@ -423,7 +431,8 @@ DWORD WINAPI CGit::AsyncReadStdErrThread(LPVOID lpParam)
 
 	return 0;
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 int CGit::Run(CGitCall* pcall)
 {
 	PROCESS_INFORMATION pi;
@@ -469,6 +478,8 @@ int CGit::Run(CGitCall* pcall)
 
 	return exitcode;
 }
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL)
 class CGitCall_ByteVector : public CGitCall
 {
 public:
@@ -494,6 +505,8 @@ public:
 	BYTE_VECTOR* m_pvector;
 	BYTE_VECTOR* m_pvectorErr;
 };
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 int CGit::Run(CString cmd,BYTE_VECTOR *vector, BYTE_VECTOR *vectorErr)
 {
 	CGitCall_ByteVector call(cmd, vector, vectorErr);
@@ -821,7 +834,8 @@ int CGit::UnsetConfigValue(const CString& key, CONFIG_TYPE type)
 		}
 	return 0;
 }
-
+#endif
+#if !defined(TGITCACHE)  && !defined(TORTOISEMERGE)
 CString CGit::GetCurrentBranch(bool fallback)
 {
 	CString output;
@@ -833,7 +847,8 @@ CString CGit::GetCurrentBranch(bool fallback)
 	else
 		return output;
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 void CGit::GetRemoteTrackedBranch(const CString& localBranch, CString& pullRemote, CString& pullBranch)
 {
 	if (localBranch.IsEmpty())
@@ -902,7 +917,8 @@ CString CGit::StripRefName(CString refName)
 		refName = refName.Mid(5);
 	return refName.TrimRight();
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISEMERGE)
 int CGit::GetCurrentBranchFromFile(const CString &sProjectRoot, CString &sBranchOut, bool fallback)
 {
 	// read current branch name like git-gui does, by parsing the .git/HEAD file directly
@@ -959,7 +975,8 @@ int CGit::GetCurrentBranchFromFile(const CString &sProjectRoot, CString &sBranch
 
 	return 0;
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 int CGit::BuildOutputFormat(CString &format,bool IsFull)
 {
 	CString log;
@@ -1126,6 +1143,7 @@ CString CGit::GetLogCmd(const CString& range, const CTGitPath* path, int mask,
 
 	return cmd;
 }
+#endif
 #define BUFSIZE 512
 void GetTempPath(CString &path)
 {
@@ -1178,7 +1196,7 @@ DWORD GetTortoiseGitTempPath(DWORD nBufferLength, LPTSTR lpBuffer)
 
 	return result + 13;
 }
-
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL)
 int CGit::RunLogFile(CString cmd, const CString &filename, CString *stdErr)
 {
 	STARTUPINFO si;
@@ -1258,7 +1276,8 @@ int CGit::RunLogFile(CString cmd, const CString &filename, CString *stdErr)
 
 	return exitcode;
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 CAutoRepository CGit::GetGitRepository() const
 {
 	return CAutoRepository(GetGitPathStringA(m_CurrentDir));
@@ -1982,7 +2001,8 @@ int CGit::GetBranchDescriptions(MAP_STRING_STRING& map)
 		return 0;
 	}, &map);
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 static void SetLibGit2SearchPath(int level, const CString &value)
 {
 	CStringA valueA = CUnicodeUtils::GetMulti(value, CP_UTF8);
@@ -1994,7 +2014,8 @@ static void SetLibGit2TemplatePath(const CString &value)
 	CStringA valueA = CUnicodeUtils::GetMulti(value, CP_UTF8);
 	git_libgit2_opts(GIT_OPT_SET_TEMPLATE_PATH, valueA);
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 int CGit::FindAndSetGitExePath(BOOL bFallback)
 {
 	CRegString msysdir = CRegString(REG_MSYSGIT_PATH, _T(""), FALSE);
@@ -2190,13 +2211,14 @@ BOOL CGit::CheckMsysGitDir(BOOL bFallback)
 	m_bInitialized = TRUE;
 	return true;
 }
+#endif
 
 CString CGit::GetHomeDirectory() const
 {
 	const wchar_t * homeDir = wget_windows_home_directory();
 	return CString(homeDir, (int)wcslen(homeDir));
 }
-
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 CString CGit::GetGitLocalConfig() const
 {
 	CString path;
@@ -2204,7 +2226,7 @@ CString CGit::GetGitLocalConfig() const
 	path += _T("config");
 	return path;
 }
-
+#endif
 CStringA CGit::GetGitPathStringA(const CString &path)
 {
 	return CUnicodeUtils::GetUTF8(CTGitPath(path).GetGitPathString());
@@ -2236,7 +2258,7 @@ CString CGit::GetGitSystemConfig() const
 	const wchar_t * systemConfig = wget_msysgit_etc();
 	return CString(systemConfig, (int)wcslen(systemConfig));
 }
-
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 BOOL CGit::CheckCleanWorkTree(bool stagedOk /* false */)
 {
 	if (UsingLibGit2(GIT_CMD_CHECK_CLEAN_WT))
@@ -2538,7 +2560,8 @@ int CGit::GetOneFile(const CString &Refname, const CTGitPath &path, const CStrin
 		return RunLogFile(cmd, outputfile, &gitLastErr);
 	}
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL)
 void CEnvironment::clear()
 {
 	__super::clear();
@@ -2676,7 +2699,8 @@ void CEnvironment::AddToPath(CString value)
 
 	SetEnv(L"PATH", path);
 }
-
+#endif
+#if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
 int CGit::GetGitEncode(TCHAR* configkey)
 {
 	CString str=GetConfigValue(configkey);
@@ -3415,3 +3439,4 @@ int CGit::GetGitVersion(CString* versiondebug, CString* errStr)
 
 	return ver;
 }
+#endif

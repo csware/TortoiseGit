@@ -60,9 +60,6 @@
     <ClCompile Include="..\Git\GitIndex.cpp">
       <Filter>Git</Filter>
     </ClCompile>
-    <ClCompile Include="..\Git\GitRev.cpp">
-      <Filter>Git</Filter>
-    </ClCompile>
     <ClCompile Include="..\Git\GitStatus.cpp">
       <Filter>Git</Filter>
     </ClCompile>
@@ -89,9 +86,6 @@
     </ClCompile>
     <ClCompile Include="..\Utils\Registry.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Git\MassiveGitTaskBase.cpp">
-      <Filter>Git</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -169,9 +163,6 @@
     </ClInclude>
     <ClInclude Include="..\TortoiseShell\ShellCache.h">
       <Filter>TortoiseShell</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Git\MassiveGitTaskBase.h">
-      <Filter>Git</Filter>
     </ClInclude>
     <ClInclude Include="..\Git\GitForWindows.h">
       <Filter>Git</Filter>

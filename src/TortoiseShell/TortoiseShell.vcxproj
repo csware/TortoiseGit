@@ -106,7 +106,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Git\MassiveGitTaskBase.cpp" />
     <ClCompile Include="..\TGitCache\CacheInterface.cpp" />
     <ClCompile Include="..\Utils\DebugOutput.cpp" />
     <ClCompile Include="..\Utils\MiscUI\IconBitmapUtils.cpp" />
@@ -117,7 +116,6 @@
     <ClCompile Include="..\Git\GitFolderStatus.cpp" />
     <ClCompile Include="..\Git\GitIndex.cpp" />
     <ClCompile Include="GITPropertyPage.cpp" />
-    <ClCompile Include="..\Git\GitRev.cpp" />
     <ClCompile Include="..\Git\GitStatus.cpp" />
     <ClCompile Include="IconOverlay.cpp" />
     <ClCompile Include="ItemIDList.cpp" />
@@ -150,10 +148,8 @@
     <ClInclude Include="..\Git\GitForWindows.h" />
     <ClInclude Include="..\Git\GitHash.h" />
     <ClInclude Include="..\Git\gitindex.h" />
-    <ClInclude Include="..\Git\GitRev.h" />
     <ClInclude Include="..\Git\GitStatus.h" />
     <ClInclude Include="..\Git\gittype.h" />
-    <ClInclude Include="..\Git\MassiveGitTaskBase.h" />
     <ClInclude Include="..\Git\TGitPath.h" />
     <ClInclude Include="..\TGitCache\CacheInterface.h" />
     <ClInclude Include="..\Utils\CreateProcessHelper.h" />

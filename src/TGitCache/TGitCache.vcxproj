@@ -47,7 +47,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Git\MassiveGitTaskBase.cpp" />
     <ClCompile Include="..\Utils\DebugOutput.cpp" />
     <ClCompile Include="CachedDirectory.cpp" />
     <ClCompile Include="CacheInterface.cpp" />
@@ -56,7 +55,6 @@
     <ClCompile Include="..\Git\Git.cpp" />
     <ClCompile Include="..\Git\GitAdminDir.cpp" />
     <ClCompile Include="..\Git\GitIndex.cpp" />
-    <ClCompile Include="..\Git\GitRev.cpp" />
     <ClCompile Include="..\Git\GitStatus.cpp" />
     <ClCompile Include="GITStatusCache.cpp" />
     <ClCompile Include="..\Utils\PathUtils.cpp" />
@@ -76,7 +74,6 @@
   <ItemGroup>
     <ClInclude Include="..\Git\Git.h" />
     <ClInclude Include="..\Git\GitForWindows.h" />
-    <ClInclude Include="..\Git\MassiveGitTaskBase.h" />
     <ClInclude Include="..\Utils\CreateProcessHelper.h" />
     <ClInclude Include="..\Utils\DebugOutput.h" />
     <ClInclude Include="CachedDirectory.h" />
