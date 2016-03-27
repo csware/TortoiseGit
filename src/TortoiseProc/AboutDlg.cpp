@@ -82,14 +82,14 @@ BOOL CAboutDlg::OnInitDialog()
 		out = _T("git not found (") + err + _T(")");;
 	out.Trim();
 
-	if (!CGit::ms_LastMsysGitDir.IsEmpty())
+	if (!g_Git.ms_LastMsysGitDir.IsEmpty())
 	{
-		out += _T(" (") + CGit::ms_LastMsysGitDir;
-		out += L"; " + CGit::ms_MsysGitRootDir;
+		out += _T(" (") + g_Git.ms_LastMsysGitDir;
+		out += L"; " + g_Git.ms_MsysGitRootDir;
 		out += L"; " + g_Git.GetGitSystemConfig();
-		if (CGit::ms_bMsys2Git)
+		if (g_Git.ms_bMsys2Git)
 			out += _T("; with msys2 hack");
-		else if (CGit::ms_bCygwinGit)
+		else if (g_Git.ms_bCygwinGit)
 			out += _T("; with cygwin hack");
 		else
 			out += L"; " + g_Git.GetGitProgramDataConfig();

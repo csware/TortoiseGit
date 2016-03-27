@@ -194,7 +194,7 @@ BOOL CTortoiseProcApp::InitInstance()
 	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": Set Help Filename %s\n"), m_pszHelpFilePath);
 	setlocale(LC_ALL, "");
 
-	if (!g_Git.CheckMsysGitDir())
+	/*if (!g_Git.CheckMsysGitDir())//TODO: check if valid
 	{
 		UINT ret = CMessageBox::Show(nullptr, IDS_PROC_NOMSYSGIT, IDS_APPNAME, 3, IDI_HAND, IDS_PROC_SETMSYSGITPATH, IDS_PROC_GOTOMSYSGITWEBSITE, IDS_ABORTBUTTON);
 		if(ret == 2)
@@ -207,7 +207,7 @@ BOOL CTortoiseProcApp::InitInstance()
 			CSinglePropSheetDlg(CString(MAKEINTRESOURCE(IDS_PROC_SETTINGS_TITLE)), new CSetMainPage(), this->GetMainWnd()).DoModal();
 		}
 		return FALSE;
-	}
+	}*/
 	if (CAppUtils::GetMsysgitVersion() < 0x01090500)
 	{
 		int ret = CMessageBox::ShowCheck(nullptr, IDS_PROC_OLDMSYSGIT, IDS_APPNAME, 1, IDI_EXCLAMATION, IDS_PROC_GOTOMSYSGITWEBSITE, IDS_ABORTBUTTON, IDS_IGNOREBUTTON, _T("OldMsysgitVersionWarning"), IDS_PROC_NOTSHOWAGAINIGNORE);
@@ -226,7 +226,7 @@ BOOL CTortoiseProcApp::InitInstance()
 
 	{
 		CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": Registering Crash Report ...\n"));
-		CCrashReport::Instance().AddUserInfoToReport(L"msysGitDir", CGit::ms_LastMsysGitDir);
+		CCrashReport::Instance().AddUserInfoToReport(L"msysGitDir", g_Git.ms_LastMsysGitDir);
 		CString versionString;
 		versionString.Format(_T("%d"), CGit::ms_LastMsysGitVersion);
 		CCrashReport::Instance().AddUserInfoToReport(L"msysGitVersion", versionString);
@@ -631,7 +631,7 @@ void CTortoiseProcApp::CheckUpgrade()
 			{
 				CRegString(REG_MSYSGIT_PATH) = newPath;
 				g_Git.m_bInitialized = FALSE;
-				g_Git.CheckMsysGitDir();
+				//g_Git.CheckMsysGitDir(); //TODO: Reseat
 			}
 		}
 	}

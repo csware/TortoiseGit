@@ -34,8 +34,6 @@
 #include "../libgit2/ssh-wintunnel.h"
 
 #if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
-bool CGit::ms_bCygwinGit = (CRegDWORD(_T("Software\\TortoiseGit\\CygwinHack"), FALSE) == TRUE);
-bool CGit::ms_bMsys2Git = (CRegDWORD(_T("Software\\TortoiseGit\\Msys2Hack"), FALSE) == TRUE);
 int CGit::m_LogEncode=CP_UTF8;
 typedef CComCritSecLock<CComCriticalSection> CAutoLocker;
 
@@ -89,7 +87,7 @@ static CString FindFileOnPath(const CString& filename, LPCTSTR env, bool wantDir
 	return _T("");
 }
 
-static BOOL FindGitPath()
+static BOOL FindGitPath(CString& gitexepath)
 {
 	size_t size;
 	_tgetenv_s(&size, nullptr, 0, _T("PATH"));
@@ -104,22 +102,22 @@ static BOOL FindGitPath()
 	CString gitExeDirectory = FindFileOnPath(_T("git.exe"), env, true);
 	if (!gitExeDirectory.IsEmpty())
 	{
-		CGit::ms_LastMsysGitDir = gitExeDirectory;
-		CGit::ms_LastMsysGitDir.TrimRight(_T("\\"));
-		if (CGit::ms_LastMsysGitDir.GetLength() > 12 && (CGit::ms_LastMsysGitDir.Right(12) == _T("\\mingw32\\bin") || CGit::ms_LastMsysGitDir.Right(12) == _T("\\mingw64\\bin")))
+		gitexepath = gitExeDirectory;
+		gitexepath.TrimRight(L'\\');
+		if (gitexepath.GetLength() > 12 && (gitexepath.Right(12) == L"\\mingw32\\bin" || gitexepath.Right(12) == L"\\mingw64\\bin"))
 		{
 			// prefer cmd directory as early Git for Windows 2.x releases only had this
-			CString installRoot = CGit::ms_LastMsysGitDir.Mid(0, CGit::ms_LastMsysGitDir.GetLength() - 12) + _T("\\cmd\\git.exe");
+			CString installRoot = gitexepath.Mid(0, gitexepath.GetLength() - 12) + L"\\cmd\\git.exe";
 			if (PathFileExists(installRoot))
-				CGit::ms_LastMsysGitDir = CGit::ms_LastMsysGitDir.Mid(0, CGit::ms_LastMsysGitDir.GetLength() - 12) + _T("\\cmd");
+				gitexepath = gitexepath.Mid(0, gitexepath.GetLength() - 12) + L"\\cmd";
 		}
-		if (CGit::ms_LastMsysGitDir.GetLength() > 4 && CGit::ms_LastMsysGitDir.Right(4) == _T("\\cmd"))
+		if (gitexepath.GetLength() > 4 && gitexepath.Right(4) == L"\\cmd")
 		{
 			// often the msysgit\cmd folder is on the %PATH%, but
 			// that git.exe does not work, so try to guess the bin folder
-			CString binDir = CGit::ms_LastMsysGitDir.Mid(0, CGit::ms_LastMsysGitDir.GetLength() - 4) + _T("\\bin\\git.exe");
+			CString binDir = gitexepath.Mid(0, gitexepath.GetLength() - 4) + L"\\bin\\git.exe";
 			if (PathFileExists(binDir))
-				CGit::ms_LastMsysGitDir = CGit::ms_LastMsysGitDir.Mid(0, CGit::ms_LastMsysGitDir.GetLength() - 4) + _T("\\bin");
+				gitexepath = gitexepath.Mid(0, gitexepath.GetLength() - 4) + L"\\bin";
 		}
 		return TRUE;
 	}
@@ -196,9 +194,6 @@ static int LogicalCompareBranchesPredicate(const CString &left, const CString &r
 #endif
 #if !defined(TGITCACHE) && !defined(TORTOISESHELL)
 #define CALL_OUTPUT_READ_CHUNK_SIZE 1024
-
-CString CGit::ms_LastMsysGitDir;
-CString CGit::ms_MsysGitRootDir;
 int CGit::ms_LastMsysGitVersion = 0;
 #endif
 bool CGit::ms_g_GitInited = false;
@@ -223,7 +218,6 @@ CGit::CGit(void)
 	SecureZeroMemory(&m_CurrentGitPi, sizeof(PROCESS_INFORMATION));
 
 	GetSortOptions();
-	this->m_bInitialized =false;
 	CheckMsysGitDir();
 	m_critGitDllSec.Init();
 #endif
@@ -234,7 +228,6 @@ CGit::CGit(const CString& anotherdir)
 {
 	ASSERT("there must be a g_Git object!" && ms_g_GitInited);
 	m_CurrentDir = anotherdir;
-	m_bInitialized = TRUE;
 	m_IsUseGitDLL = !!CRegDWORD(_T("Software\\TortoiseGit\\UsingGitDLL"), 1);
 	m_IsUseLibGit2 = !!CRegDWORD(_T("Software\\TortoiseGit\\UseLibgit2"), TRUE);
 	m_IsUseLibGit2_mask = CRegDWORD(_T("Software\\TortoiseGit\\UseLibgit2_mask"), DEFAULT_USE_LIBGIT2_MASK);
@@ -243,6 +236,13 @@ CGit::CGit(const CString& anotherdir)
 	m_GitDiff = 0;
 	m_GitSimpleListDiff = 0;
 	m_Environment = g_Git.m_Environment;
+
+	ms_LastMsysGitDir = g_Git.ms_LastMsysGitDir;
+	ms_LastMsysGitDirExtraPath = g_Git.ms_LastMsysGitDir;
+	ms_MsysGitRootDir = g_Git.ms_MsysGitRootDir;
+
+	ms_bCygwinGit = g_Git.ms_bCygwinGit;
+	ms_bMsys2Git = g_Git.ms_bMsys2Git;
 }
 
 CGit::~CGit(void)
@@ -2020,73 +2020,8 @@ static void SetLibGit2TemplatePath(const CString &value)
 	git_libgit2_opts(GIT_OPT_SET_TEMPLATE_PATH, valueA);
 }
 #if !defined(TGITCACHE) && !defined(TORTOISESHELL) && !defined(TORTOISEMERGE)
-int CGit::FindAndSetGitExePath(BOOL bFallback)
+void CGit::SetFreshEnvironment(const CString& gitexepath, const CString& gitexepathextrapath)
 {
-	CRegString msysdir = CRegString(REG_MSYSGIT_PATH, _T(""), FALSE);
-	CString str = msysdir;
-	if (!str.IsEmpty() && PathFileExists(str + _T("\\git.exe")))
-	{
-		CGit::ms_LastMsysGitDir = str;
-		return TRUE;
-	}
-
-	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": git.exe not exists: %s\n"), (LPCTSTR)CGit::ms_LastMsysGitDir);
-	if (!bFallback)
-		return FALSE;
-
-	// first, search PATH if git/bin directory is already present
-	if (FindGitPath())
-	{
-		CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": FindGitPath() => %s\n"), (LPCTSTR)CGit::ms_LastMsysGitDir);
-		msysdir = CGit::ms_LastMsysGitDir;
-		msysdir.write();
-		return TRUE;
-	}
-
-	CRegString msyslocalinstalldir = CRegString(REG_MSYSGIT_INSTALL_LOCAL, _T(""), FALSE, HKEY_CURRENT_USER);
-	str = msyslocalinstalldir;
-	str.TrimRight(_T("\\"));
-#ifdef _WIN64
-	if (str.IsEmpty())
-	{
-		CRegString msysinstalldir = CRegString(REG_MSYSGIT_INSTALL_LOCAL, _T(""), FALSE, HKEY_LOCAL_MACHINE);
-		str = msysinstalldir;
-		str.TrimRight(_T("\\"));
-	}
-#endif
-	if (str.IsEmpty())
-	{
-		CRegString msysinstalldir = CRegString(REG_MSYSGIT_INSTALL, _T(""), FALSE, HKEY_LOCAL_MACHINE);
-		str = msysinstalldir;
-		str.TrimRight(_T("\\"));
-	}
-	if (!str.IsEmpty())
-	{
-		if (PathFileExists(str + _T("\\bin\\git.exe")))
-			str += _T("\\bin");
-		else if (PathFileExists(str + _T("\\cmd\\git.exe"))) // only needed for older Git for Windows 2.x packages
-			str += _T("\\cmd");
-		else
-		{
-			CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": Git for Windows installation found, but git.exe not exists in %s\n"), (LPCTSTR)str);
-			return FALSE;
-		}
-		msysdir = str;
-		CGit::ms_LastMsysGitDir = str;
-		msysdir.write();
-		return TRUE;
-	}
-
-	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": Found no git.exe\n"));
-	return FALSE;
-}
-
-BOOL CGit::CheckMsysGitDir(BOOL bFallback)
-{
-	if (m_bInitialized)
-		return TRUE;
-
-	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": CheckMsysGitDir(%d)\n"), bFallback);
 	this->m_Environment.clear();
 	m_Environment.CopyProcessEnvironment();
 	m_Environment.SetEnv(_T("GIT_WORK_TREE"), nullptr); // Remove %GIT_DIR% before executing git.exe
@@ -2098,18 +2033,18 @@ BOOL CGit::CheckMsysGitDir(BOOL bFallback)
 		m_Environment.SetEnv(_T("HOME"), GetHomeDirectory());
 
 	//setup ssh client
-	CString sshclient=CRegString(_T("Software\\TortoiseGit\\SSH"));
+	CString sshclient = CRegString(_T("Software\\TortoiseGit\\SSH"));
 	if (sshclient.IsEmpty())
 		sshclient = CRegString(_T("Software\\TortoiseGit\\SSH"), _T(""), FALSE, HKEY_LOCAL_MACHINE);
 
-	if(!sshclient.IsEmpty())
+	if (!sshclient.IsEmpty())
 	{
 		m_Environment.SetEnv(_T("GIT_SSH"), sshclient);
 		m_Environment.SetEnv(_T("SVN_SSH"), sshclient);
 	}
 	else
 	{
-		TCHAR sPlink[MAX_PATH] = {0};
+		TCHAR sPlink[MAX_PATH] = { 0 };
 		GetModuleFileName(nullptr, sPlink, _countof(sPlink));
 		LPTSTR ptr = _tcsrchr(sPlink, _T('\\'));
 		if (ptr) {
@@ -2120,23 +2055,26 @@ BOOL CGit::CheckMsysGitDir(BOOL bFallback)
 	}
 
 	{
-		TCHAR sAskPass[MAX_PATH] = {0};
+		TCHAR sAskPass[MAX_PATH] = { 0 };
 		GetModuleFileName(nullptr, sAskPass, _countof(sAskPass));
 		LPTSTR ptr = _tcsrchr(sAskPass, _T('\\'));
 		if (ptr)
 		{
 			_tcscpy_s(ptr + 1, MAX_PATH - (ptr - sAskPass + 1), _T("SshAskPass.exe"));
-			m_Environment.SetEnv(_T("DISPLAY"),_T(":9999"));
-			m_Environment.SetEnv(_T("SSH_ASKPASS"),sAskPass);
-			m_Environment.SetEnv(_T("GIT_ASKPASS"),sAskPass);
+			m_Environment.SetEnv(_T("DISPLAY"), _T(":9999"));
+			m_Environment.SetEnv(_T("SSH_ASKPASS"), sAskPass);
+			m_Environment.SetEnv(_T("GIT_ASKPASS"), sAskPass);
 		}
 	}
 
-	if (!FindAndSetGitExePath(bFallback))
-		return FALSE;
+	m_Environment.AddToPath(gitexepath);
+	m_Environment.AddToPath(gitexepathextrapath);
+
+	ms_bCygwinGit = (CRegDWORD(_T("Software\\TortoiseGit\\CygwinHack"), FALSE) == TRUE);
+	ms_bMsys2Git = (CRegDWORD(_T("Software\\TortoiseGit\\Msys2Hack"), FALSE) == TRUE);
 
 	CString msysGitDir;
-	PathCanonicalize(CStrBuf(msysGitDir, MAX_PATH), CGit::ms_LastMsysGitDir + _T("\\..\\"));
+	PathCanonicalize(CStrBuf(msysGitDir, MAX_PATH), ms_LastMsysGitDir + _T("\\..\\"));
 	static const CString prefixes[] = { L"mingw64\\etc", L"mingw32\\etc", L"etc" };
 	static const int prefixes_len[] = { 8, 8, 0 };
 	for (int i = 0; i < _countof(prefixes); ++i)
@@ -2151,14 +2089,76 @@ BOOL CGit::CheckMsysGitDir(BOOL bFallback)
 		}
 	}
 	if (ms_bMsys2Git) // in Msys2 git.exe is in usr\bin; this also need to be after the check for etc folder, as Msys2 also has mingw64\etc, but uses etc
-		PathCanonicalize(CStrBuf(msysGitDir, MAX_PATH), CGit::ms_LastMsysGitDir + _T("\\..\\.."));
-	CGit::ms_MsysGitRootDir = msysGitDir;
+		PathCanonicalize(CStrBuf(msysGitDir, MAX_PATH), ms_LastMsysGitDir + _T("\\..\\.."));
+	ms_MsysGitRootDir = msysGitDir;
+}
+
+int CGit::FindGitExe(CString& gitexepath)
+{
+	CRegString msysdir = CRegString(REG_MSYSGIT_PATH, L"", FALSE);
+	gitexepath = msysdir;
+	if (!gitexepath.IsEmpty() && PathFileExists(gitexepath + L"\\git.exe"))
+		return TRUE;
+
+	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": git.exe not exists: %s\n", (LPCTSTR)gitexepath);
+
+	// first, search PATH if git/bin directory is already present
+	if (FindGitPath(gitexepath))
+	{
+		CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": FindGitPath() => %s\n", (LPCTSTR)gitexepath);
+		return TRUE;
+	}
+
+	CRegString msyslocalinstalldir = CRegString(REG_MSYSGIT_INSTALL_LOCAL, L"", FALSE, HKEY_CURRENT_USER);
+	gitexepath = msyslocalinstalldir;
+	gitexepath.TrimRight(L'\\');
+#ifdef _WIN64
+	if (gitexepath.IsEmpty())
+	{
+		CRegString msysinstalldir = CRegString(REG_MSYSGIT_INSTALL_LOCAL, L"", FALSE, HKEY_LOCAL_MACHINE);
+		gitexepath = msysinstalldir;
+		gitexepath.TrimRight(L'\\');
+	}
+#endif
+	if (gitexepath.IsEmpty())
+	{
+		CRegString msysinstalldir = CRegString(REG_MSYSGIT_INSTALL, L"", FALSE, HKEY_LOCAL_MACHINE);
+		gitexepath = msysinstalldir;
+		gitexepath.TrimRight(L'\\');
+	}
+	if (!gitexepath.IsEmpty())
+	{
+		if (PathFileExists(gitexepath + L"\\bin\\git.exe"))
+			gitexepath += _T("\\bin");
+		else if (PathFileExists(gitexepath + L"\\cmd\\git.exe")) // only needed for older Git for Windows 2.x packages
+			gitexepath += L"\\cmd";
+		else
+		{
+			CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": Git for Windows installation found, but git.exe not exists in %s\n", (LPCTSTR)gitexepath);
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": Found no git.exe\n");
+	return FALSE;
+}
+
+BOOL CGit::CheckMsysGitDir()
+{
+	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": CheckMsysGitDir\n"));
+
+	if (FindGitExe(ms_LastMsysGitDir))
+		return FALSE;
+
+	ms_LastMsysGitDirExtraPath = CRegString(REG_MSYSGIT_EXTRA_PATH, _T(""), FALSE);
+	SetFreshEnvironment(ms_LastMsysGitDir, ms_LastMsysGitDirExtraPath);
 
 	if ((CString)CRegString(REG_SYSTEM_GITCONFIGPATH, _T(""), FALSE) != g_Git.GetGitSystemConfig())
 		CRegString(REG_SYSTEM_GITCONFIGPATH, _T(""), FALSE) = g_Git.GetGitSystemConfig();
 
-	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": ms_LastMsysGitDir = %s\n"), (LPCTSTR)CGit::ms_LastMsysGitDir);
-	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": ms_MsysGitRootDir = %s\n"), (LPCTSTR)CGit::ms_MsysGitRootDir);
+	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": ms_LastMsysGitDir = %s\n"), (LPCTSTR)ms_LastMsysGitDir);
+	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": ms_MsysGitRootDir = %s\n"), (LPCTSTR)ms_MsysGitRootDir);
 	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) _T(": System config = %s\n"), (LPCTSTR)g_Git.GetGitSystemConfig());
 	if (!ms_bCygwinGit && !ms_bMsys2Git)
 	{
@@ -2180,12 +2180,8 @@ BOOL CGit::CheckMsysGitDir(BOOL bFallback)
 	else
 		SetLibGit2TemplatePath(CGit::ms_MsysGitRootDir + _T("usr\\share\\git-core\\templates"));
 
-	m_Environment.AddToPath(CGit::ms_LastMsysGitDir);
-	m_Environment.AddToPath((CString)CRegString(REG_MSYSGIT_EXTRA_PATH, _T(""), FALSE));
-
 	SetupLibgit2Filter();
 
-	m_bInitialized = TRUE;
 	return true;
 }
 #endif

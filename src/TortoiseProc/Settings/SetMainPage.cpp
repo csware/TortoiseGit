@@ -223,8 +223,7 @@ BOOL CSetMainPage::OnApply()
 	Store(m_bCheckNewer, m_regCheckNewer);
 
 	// only complete if the msysgit directory is ok
-	g_Git.m_bInitialized = FALSE;
-	if (g_Git.CheckMsysGitDir(FALSE))
+	/*if (g_Git.CheckMsysGitDir(FALSE)) // TODO: reseat
 	{
 		SetModified(FALSE);
 		return ISettingsPropPage::OnApply();
@@ -234,7 +233,8 @@ BOOL CSetMainPage::OnApply()
 		if (CMessageBox::Show(nullptr, _T("Invalid git.exe path.\nCheck help file for \"Git.exe Path\"."), _T("TortoiseGit"), 1, IDI_ERROR, CString(MAKEINTRESOURCE(IDS_MSGBOX_OK)), CString(MAKEINTRESOURCE(IDS_MSGBOX_HELP))) == 2)
 			OnHelp();
 		return 0;
-	}
+	}*/
+	return 0;
 }
 
 void CSetMainPage::OnBnClickedChecknewerbutton()
@@ -270,23 +270,15 @@ void CSetMainPage::OnCheck()
 
 	OnMsysGitPathModify();
 
-	CString oldpath = m_regMsysGitPath;
-	CString oldextranpath = this->m_regMsysGitExtranPath;
+	CGit test(g_Git.m_CurrentDir);
 
-	Store(m_sMsysGitPath, m_regMsysGitPath);
-	Store(m_sMsysGitExtranPath, m_regMsysGitExtranPath);
-
-	CGit test;
-
-	// TODO: needs rewrite to not fuck with g_Git!!!
-	g_Git.m_bInitialized = false;
-
-	if (g_Git.CheckMsysGitDir(FALSE))
+	if (PathFileExists(m_sMsysGitPath + L"\\git.exe"))
 	{
+		test.SetFreshEnvironment(m_sMsysGitPath, m_sMsysGitExtranPath);
 		CString cmd;
 		CString out;
 		cmd=_T("git.exe --version");
-		int ret = g_Git.Run(cmd,&out,CP_UTF8);
+		int ret = test.Run(cmd, &out, CP_UTF8);
 		this->GetDlgItem(IDC_MSYSGIT_VER)->SetWindowText(out);
 		if (out.IsEmpty())
 		{
@@ -295,7 +287,7 @@ void CSetMainPage::OnCheck()
 			else if (CMessageBox::Show(nullptr, _T("Could not get read version information from git.exe.\nCheck help file for \"Git.exe Path\"."),_T("TortoiseGit"), 1, IDI_ERROR, CString(MAKEINTRESOURCE(IDS_MSGBOX_OK)), CString(MAKEINTRESOURCE(IDS_MSGBOX_HELP))) == 2)
 				OnHelp();
 		}
-		else if (!(CGit::ms_bCygwinGit || CGit::ms_bMsys2Git) && out.Find(_T("msysgit")) == -1 && out.Find(_T("windows")) == -1 && CMessageBox::Show(nullptr, _T("Could not find \"msysgit\" or \"windows\" in versionstring of git.exe.\nIf you are using git of the cygwin or msys2 environment please read the help file for the keyword \"cygwin git\" or \"msys2 git\"."), _T("TortoiseGit"), 1, IDI_INFORMATION, CString(MAKEINTRESOURCE(IDS_MSGBOX_OK)), CString(MAKEINTRESOURCE(IDS_MSGBOX_HELP))) == 2)
+		else if (!(test.ms_bCygwinGit || test.ms_bMsys2Git) && out.Find(L"msysgit") == -1 && out.Find(L"windows") == -1 && CMessageBox::Show(nullptr, L"Could not find \"msysgit\" or \"windows\" in versionstring of git.exe.\nIf you are using git of the cygwin or msys2 environment please read the help file for the keyword \"cygwin git\" or \"msys2 git\".", L"TortoiseGit", 1, IDI_INFORMATION, CString(MAKEINTRESOURCE(IDS_MSGBOX_OK)), CString(MAKEINTRESOURCE(IDS_MSGBOX_HELP))) == 2)
 			OnHelp();
 	}
 	else
@@ -303,9 +295,6 @@ void CSetMainPage::OnCheck()
 		if (CMessageBox::Show(nullptr, _T("Invalid git.exe path.\nCheck help file for \"Git.exe Path\"."), _T("TortoiseGit"), 1, IDI_ERROR, CString(MAKEINTRESOURCE(IDS_MSGBOX_OK)), CString(MAKEINTRESOURCE(IDS_MSGBOX_HELP))) == 2)
 			OnHelp();
 	}
-
-	Store(oldpath, m_regMsysGitPath);
-	Store(oldextranpath, m_regMsysGitExtranPath);
 }
 
 void CSetMainPage::OnBnClickedButtonShowEnv()

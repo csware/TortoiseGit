@@ -3313,10 +3313,8 @@ int CAppUtils::GetMsysgitVersion()
 	CRegDWORD regTime		= CRegDWORD(_T("Software\\TortoiseGit\\git_file_time"));
 	CRegDWORD regVersion	= CRegDWORD(_T("Software\\TortoiseGit\\git_cached_version"));
 
-	CString gitpath = CGit::ms_LastMsysGitDir+_T("\\git.exe");
-
 	__int64 time=0;
-	if (!CGit::GetFileModifyTime(gitpath, &time))
+	if (!CGit::GetFileModifyTime(g_Git.ms_LastMsysGitDir + _T("\\git.exe"), &time))
 	{
 		if((DWORD)time == regTime)
 		{

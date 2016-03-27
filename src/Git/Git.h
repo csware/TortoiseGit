@@ -190,9 +190,13 @@ public:
 		}
 	}
 
-	BOOL CheckMsysGitDir(BOOL bFallback = TRUE);
+private:
+	BOOL CheckMsysGitDir();
+public:
+	void SetFreshEnvironment(const CString& gitexepath, const CString& gitexepathextrapath);
+	int FindGitExe(CString& gitexepath);
 	void SetupLibgit2Filter();
-	BOOL FindAndSetGitExePath(BOOL bFallback);
+	BOOL FindAndSetGitExePath();
 	BOOL m_bInitialized;
 
 	typedef enum
@@ -229,11 +233,12 @@ public:
 	CString GetGitProgramDataConfig() const;
 	CAutoRepository GetGitRepository() const;
 	static CStringA GetGitPathStringA(const CString &path);
-	static CString ms_LastMsysGitDir;	// the last msysgitdir added to the path, blank if none
-	static CString ms_MsysGitRootDir;
+	CString ms_LastMsysGitDir;	// the last msysgitdir added to the path, blank if none
+	CString ms_LastMsysGitDirExtraPath;
+	CString ms_MsysGitRootDir;
 	static int ms_LastMsysGitVersion;
-	static bool ms_bCygwinGit;
-	static bool ms_bMsys2Git;
+	bool ms_bCygwinGit;
+	bool ms_bMsys2Git;
 	static int m_LogEncode;
 	static bool IsBranchNameValid(const CString& branchname);
 	bool IsBranchTagNameUnique(const CString& name);
