@@ -90,7 +90,7 @@ private:
 	BOOL					m_bShowLocalChangesIgnored;
 	volatile LONG			m_bBlock;
 	CString					m_sTitle;
-	bool					m_bCanceled;
+	volatile bool			m_bCanceled;
 	BOOL					m_bShowIgnored;
 	BOOL					m_bWholeProject;
 };

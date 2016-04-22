@@ -1043,7 +1043,7 @@ int CTGitPathList::ParserFromLsFile(BYTE_VECTOR &out,bool /*staged*/)
 	}
 	return 0;
 }
-int CTGitPathList::FillUnRev(unsigned int action, CTGitPathList *list, CString *err)
+int CTGitPathList::FillUnRev(unsigned int action, CTGitPathList* list, CString* err, volatile bool* canceled)
 {
 	this->Clear();
 	CTGitPath path;
@@ -1053,7 +1053,7 @@ int CTGitPathList::FillUnRev(unsigned int action, CTGitPathList *list, CString *
 		count=1;
 	else
 		count=list->GetCount();
-	for (int i = 0; i < count; ++i)
+	for (int i = 0; i < count && (!canceled || !*canceled); ++i)
 	{
 		CString cmd;
 		int pos = 0;
@@ -1076,7 +1076,7 @@ int CTGitPathList::FillUnRev(unsigned int action, CTGitPathList *list, CString *
 
 		BYTE_VECTOR out, errb;
 		out.clear();
-		if (g_Git.Run(cmd, &out, &errb))
+		if (g_Git.Run(cmd, &out, &errb, canceled))
 		{
 			if (err != nullptr)
 				CGit::StringAppend(err, &errb[0], CP_UTF8, (int)errb.size());
@@ -1102,7 +1102,7 @@ int CTGitPathList::FillUnRev(unsigned int action, CTGitPathList *list, CString *
 	}
 	return 0;
 }
-int CTGitPathList::FillBasedOnIndexFlags(unsigned short flag, unsigned short flagextended, CTGitPathList* list /*nullptr*/)
+int CTGitPathList::FillBasedOnIndexFlags(unsigned short flag, unsigned short flagextended, CTGitPathList* list /*nullptr*/, volatile bool* canceled /*nullptr*/)
 {
 	Clear();
 	CTGitPath path;
@@ -1120,7 +1120,7 @@ int CTGitPathList::FillBasedOnIndexFlags(unsigned short flag, unsigned short fla
 		count = 1;
 	else
 		count = list->GetCount();
-	for (int j = 0; j < count; ++j)
+	for (int j = 0; j < count && (!canceled || !*canceled); ++j)
 	{
 		for (size_t i = 0, ecount = git_index_entrycount(index); i < ecount; ++i)
 		{

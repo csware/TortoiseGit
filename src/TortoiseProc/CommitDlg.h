@@ -204,7 +204,7 @@ private:
 	int					m_nPopupPasteLastMessage;
 	int					m_nPopupRecentMessage;
 	CRegHistory			m_History;
-	bool				m_bCancelled;
+	volatile bool		m_bCancelled;
 	CSplitterControl	m_wndSplitter;
 	CRect				m_DlgOrigRect;
 	CRect				m_LogMsgOrigRect;

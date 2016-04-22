@@ -253,7 +253,7 @@ public:
 
 	int Run(CString cmd, CString* output, int code);
 	int Run(CString cmd, CString* output, CString* outputErr, int code);
-	int Run(CString cmd, BYTE_VECTOR* byte_array, BYTE_VECTOR* byte_arrayErr = nullptr);
+	int Run(CString cmd, BYTE_VECTOR* byte_array, BYTE_VECTOR* byte_arrayErr = nullptr, volatile bool* canceled = nullptr);
 	int Run(CGitCall* pcall);
 	int Run(CString cmd, const GitReceiverFunc& recv, CString* outputErr = nullptr);
 
@@ -421,7 +421,7 @@ public:
 
 	int GetCommitDiffList(const CString &rev1, const CString &rev2, CTGitPathList &outpathlist, bool ignoreSpaceAtEol = false, bool ignoreSpaceChange = false, bool ignoreAllSpace = false, bool ignoreBlankLines = false);
 	int GetInitAddList(CTGitPathList &outpathlist);
-	int GetWorkingTreeChanges(CTGitPathList& result, bool amend = false, CTGitPathList* filterlist = nullptr);
+	int GetWorkingTreeChanges(CTGitPathList& result, bool amend = false, CTGitPathList* filterlist = nullptr, volatile bool* canceled = nullptr);
 
 	static __int64 filetime_to_time_t(const FILETIME *ft)
 	{

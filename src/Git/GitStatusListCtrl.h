@@ -866,7 +866,7 @@ public:
 	 * during the status fetching. As soon as the variable changes to true,
 	 * the operations stops.
 	 */
-	void SetCancelBool(bool * pbCanceled) {m_pbCanceled = pbCanceled;}
+	void SetCancelBool(volatile bool* pbCanceled) { m_pbCanceled = pbCanceled; }
 
 	/**
 	 * Sets the string shown in the control while the status is fetched.
@@ -1062,7 +1062,7 @@ private:
 	int RevertSelectedItemToVersion(bool parent = false);
 
 private:
-	bool *						m_pbCanceled;
+	volatile bool*				m_pbCanceled;
 	bool					    m_bAscending;		///< sort direction
 	int					        m_nSortedColumn;	///< which column to sort
 	bool						m_bHasCheckboxes;

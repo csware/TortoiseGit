@@ -472,7 +472,12 @@ int CGit::Run(CGitCall* pcall)
 class CGitCall_ByteVector : public CGitCall
 {
 public:
-	CGitCall_ByteVector(CString cmd,BYTE_VECTOR* pvector, BYTE_VECTOR* pvectorErr = nullptr) : CGitCall(cmd),m_pvector(pvector), m_pvectorErr(pvectorErr) {}
+	CGitCall_ByteVector(CString cmd, BYTE_VECTOR* pvector, BYTE_VECTOR* pvectorErr = nullptr, volatile bool* canceled = nullptr)
+	: CGitCall(cmd)
+	, m_pvector(pvector)
+	, m_pvectorErr(pvectorErr)
+	, m_pbCanceled(canceled)
+	{}
 	virtual bool OnOutputData(const BYTE* data, size_t size)
 	{
 		if (!m_pvector || size == 0)
@@ -486,17 +491,22 @@ public:
 	{
 		if (!m_pvectorErr || size == 0)
 			return false;
+		if (m_pbCanceled && *m_pbCanceled)
+			return true;
 		size_t oldsize = m_pvectorErr->size();
 		m_pvectorErr->resize(m_pvectorErr->size() + size);
 		memcpy(&*(m_pvectorErr->begin() + oldsize), data, size);
 		return false;
 	}
+	volatile bool* m_pbCanceled;
 	BYTE_VECTOR* m_pvector;
 	BYTE_VECTOR* m_pvectorErr;
 };
-int CGit::Run(CString cmd,BYTE_VECTOR *vector, BYTE_VECTOR *vectorErr)
+int CGit::Run(CString cmd, BYTE_VECTOR* vector, BYTE_VECTOR* vectorErr, volatile bool* canceled)
 {
-	CGitCall_ByteVector call(cmd, vector, vectorErr);
+	if (canceled && *canceled)
+		return 0;
+	CGitCall_ByteVector call(cmd, vector, vectorErr, canceled);
 	return Run(&call);
 }
 int CGit::Run(CString cmd, CString* output, int code)
@@ -3154,7 +3164,7 @@ bool CGit::LoadTextFile(const CString &filename, CString &msg)
 	return true; // load no further files
 }
 
-int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList* filterlist)
+int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList* filterlist, volatile bool* canceled)
 {
 	if (IsInitRepos())
 		return GetInitAddList(result);
@@ -3169,7 +3179,7 @@ int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList
 	if (amend)
 		head = _T("HEAD~1");
 
-	for (int i = 0; i < count; ++i)
+	for (int i = 0; i < count && (!canceled || !*canceled); ++i)
 	{
 		BYTE_VECTOR cmdout;
 		CString cmd;
@@ -3180,12 +3190,12 @@ int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList
 				cmd = _T("git.exe status --");
 			else
 				cmd.Format(_T("git.exe status -- \"%s\""), (LPCTSTR)(*filterlist)[i].GetGitPathString());
-			Run(cmd, &cmdout);
+			Run(cmd, &cmdout, nullptr, canceled);
 			cmdout.clear();
 		}
 
 		// also list staged files which will be in the commit
-		Run(_T("git.exe diff-index --cached --raw ") + head + _T(" --numstat -C -M -z --"), &cmdout);
+		Run(L"git.exe diff-index --cached --raw " + head + L" --numstat -C -M -z --", &cmdout, nullptr, canceled);
 
 		if (!filterlist)
 			cmd = (_T("git.exe diff-index --raw ") + head + _T(" --numstat -C -M -z --"));
@@ -3193,7 +3203,7 @@ int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList
 			cmd.Format(_T("git.exe diff-index --raw ") + head + _T(" --numstat -C -M -z -- \"%s\""), (LPCTSTR)(*filterlist)[i].GetGitPathString());
 
 		BYTE_VECTOR cmdErr;
-		if (Run(cmd, &cmdout, &cmdErr))
+		if (Run(cmd, &cmdout, &cmdErr, canceled))
 		{
 			int last = cmdErr.RevertFind(0, -1);
 			CString str;
@@ -3210,7 +3220,7 @@ int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList
 		duplicateMap.insert(std::pair<CString, int>(result[i].GetGitPathString(), i));
 
 	// handle delete conflict case, when remote : modified, local : deleted.
-	for (int i = 0; i < count; ++i)
+	for (int i = 0; i < count && (!canceled || !*canceled); ++i)
 	{
 		BYTE_VECTOR cmdout;
 		CString cmd;
@@ -3220,7 +3230,7 @@ int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList
 		else
 			cmd.Format(_T("git.exe ls-files -u -t -z -- \"%s\""), (LPCTSTR)(*filterlist)[i].GetGitPathString());
 
-		Run(cmd, &cmdout);
+		Run(cmd, &cmdout, nullptr, canceled);
 
 		CTGitPathList conflictlist;
 		conflictlist.ParserFromLog(cmdout);
@@ -3242,7 +3252,7 @@ int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList
 
 	// handle source files of file renames/moves (issue #860)
 	// if a file gets renamed and the new file "git add"ed, diff-index doesn't list the source file anymore
-	for (int i = 0; i < count; ++i)
+	for (int i = 0; i < count && (!canceled || !*canceled); ++i)
 	{
 		BYTE_VECTOR cmdout;
 		CString cmd;
@@ -3252,7 +3262,7 @@ int CGit::GetWorkingTreeChanges(CTGitPathList& result, bool amend, CTGitPathList
 		else
 			cmd.Format(_T("git.exe ls-files -d -z -- \"%s\""), (LPCTSTR)(*filterlist)[i].GetGitPathString());
 
-		Run(cmd, &cmdout);
+		Run(cmd, &cmdout, nullptr, canceled);
 
 		CTGitPathList deletelist;
 		deletelist.ParserFromLog(cmdout, true);

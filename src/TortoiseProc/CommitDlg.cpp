@@ -1268,7 +1268,7 @@ UINT CCommitDlg::StatusThread()
 	success=m_ListCtrl.GetStatus(pList);
 
 	//m_ListCtrl.UpdateFileList(git_revnum_t(GIT_REV_ZERO));
-	if(this->m_bShowUnversioned)
+	if (this->m_bShowUnversioned && !m_bCancelled)
 		m_ListCtrl.UpdateFileList(CGitStatusListCtrl::FILELIST_UNVER,true,pList);
 
 	m_ListCtrl.CheckIfChangelistsArePresent(false);

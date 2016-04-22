@@ -3767,7 +3767,7 @@ int CGitStatusListCtrl::UpdateFileList(CTGitPathList *list)
 {
 	m_CurrentVersion = GIT_REV_ZERO;
 
-	g_Git.GetWorkingTreeChanges(m_StatusFileList, m_amend, list);
+	g_Git.GetWorkingTreeChanges(m_StatusFileList, m_amend, list, m_pbCanceled);
 
 	BOOL bDeleteChecked = FALSE;
 	int deleteFromIndex = 0;
@@ -3843,7 +3843,7 @@ int CGitStatusListCtrl::UpdateUnRevFileList(CTGitPathList &list)
 int CGitStatusListCtrl::UpdateUnRevFileList(CTGitPathList *List)
 {
 	CString err;
-	if (m_UnRevFileList.FillUnRev(CTGitPath::LOGACTIONS_UNVER, List, &err))
+	if (m_UnRevFileList.FillUnRev(CTGitPath::LOGACTIONS_UNVER, List, &err, m_pbCanceled))
 	{
 		CMessageBox::Show(GetSafeHwnd(), _T("Failed to get UnRev file list\n") + err, _T("TortoiseGit"), MB_OK | MB_ICONERROR);
 		return -1;
@@ -3861,7 +3861,7 @@ int CGitStatusListCtrl::UpdateUnRevFileList(CTGitPathList *List)
 int CGitStatusListCtrl::UpdateIgnoreFileList(CTGitPathList *List)
 {
 	CString err;
-	if (m_IgnoreFileList.FillUnRev(CTGitPath::LOGACTIONS_IGNORE, List, &err))
+	if (m_IgnoreFileList.FillUnRev(CTGitPath::LOGACTIONS_IGNORE, List, &err, m_pbCanceled))
 	{
 		CMessageBox::Show(GetSafeHwnd(), _T("Failed to get Ignore file list\n") + err, _T("TortoiseGit"), MB_OK | MB_ICONERROR);
 		return -1;
@@ -3878,7 +3878,7 @@ int CGitStatusListCtrl::UpdateIgnoreFileList(CTGitPathList *List)
 
 int CGitStatusListCtrl::UpdateLocalChangesIgnoredFileList(CTGitPathList *list)
 {
-	m_LocalChangesIgnoredFileList.FillBasedOnIndexFlags(GIT_IDXENTRY_VALID, GIT_IDXENTRY_SKIP_WORKTREE, list);
+	m_LocalChangesIgnoredFileList.FillBasedOnIndexFlags(GIT_IDXENTRY_VALID, GIT_IDXENTRY_SKIP_WORKTREE, list, m_pbCanceled);
 	for (int i = 0; i < m_LocalChangesIgnoredFileList.GetCount(); ++i)
 	{
 		CTGitPath * gitpatch = (CTGitPath*)&m_LocalChangesIgnoredFileList[i];
@@ -3890,7 +3890,8 @@ int CGitStatusListCtrl::UpdateLocalChangesIgnoredFileList(CTGitPathList *list)
 
 int CGitStatusListCtrl::UpdateFileList(int mask,bool once,CTGitPathList *List)
 {
-	if(mask&CGitStatusListCtrl::FILELIST_MODIFY)
+	ASSERT(m_pbCanceled);
+	if ((mask & CGitStatusListCtrl::FILELIST_MODIFY) && !*m_pbCanceled)
 	{
 		if(once || (!(m_FileLoaded&CGitStatusListCtrl::FILELIST_MODIFY)))
 		{
@@ -3900,18 +3901,18 @@ int CGitStatusListCtrl::UpdateFileList(int mask,bool once,CTGitPathList *List)
 	}
 	if (mask & CGitStatusListCtrl::FILELIST_UNVER || mask & CGitStatusListCtrl::FILELIST_IGNORE)
 	{
-		if(once || (!(m_FileLoaded&CGitStatusListCtrl::FILELIST_UNVER)))
+		if ((once || (!(m_FileLoaded&CGitStatusListCtrl::FILELIST_UNVER))) && !*m_pbCanceled)
 		{
 			UpdateUnRevFileList(List);
 			m_FileLoaded|=CGitStatusListCtrl::FILELIST_UNVER;
 		}
-		if(mask&CGitStatusListCtrl::FILELIST_IGNORE && (once || (!(m_FileLoaded&CGitStatusListCtrl::FILELIST_IGNORE))))
+		if (((mask & CGitStatusListCtrl::FILELIST_IGNORE) && (once || (!(m_FileLoaded & CGitStatusListCtrl::FILELIST_IGNORE)))) && !*m_pbCanceled)
 		{
 			UpdateIgnoreFileList(List);
 			m_FileLoaded |= CGitStatusListCtrl::FILELIST_IGNORE;
 		}
 	}
-	if (mask & CGitStatusListCtrl::FILELIST_LOCALCHANGESIGNORED && (once || (!(m_FileLoaded & CGitStatusListCtrl::FILELIST_LOCALCHANGESIGNORED))))
+	if ((mask & CGitStatusListCtrl::FILELIST_LOCALCHANGESIGNORED) && (once || (!(m_FileLoaded & CGitStatusListCtrl::FILELIST_LOCALCHANGESIGNORED))) && !*m_pbCanceled)
 	{
 		UpdateLocalChangesIgnoredFileList(List);
 		m_FileLoaded |= CGitStatusListCtrl::FILELIST_LOCALCHANGESIGNORED;
