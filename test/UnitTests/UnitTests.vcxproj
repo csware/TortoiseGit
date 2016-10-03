@@ -59,117 +59,35 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">rpcrt4.lib;crypt32.lib;winhttp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">rpcrt4.lib;crypt32.lib;winhttp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">rpcrt4.lib;crypt32.lib;winhttp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">rpcrt4.lib;crypt32.lib;winhttp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\Git\Git.h" />
-    <ClInclude Include="..\..\src\Git\GitAdminDir.h" />
-    <ClInclude Include="..\..\src\Git\GitForWindows.h" />
-    <ClInclude Include="..\..\src\Git\GitHash.h" />
-    <ClInclude Include="..\..\src\Git\gitindex.h" />
-    <ClInclude Include="..\..\src\Git\GitRev.h" />
-    <ClInclude Include="..\..\src\Git\GitRevLoglist.h" />
-    <ClInclude Include="..\..\src\Git\GitRevRefBrowser.h" />
-    <ClInclude Include="..\..\src\Git\GitStatus.h" />
-    <ClInclude Include="..\..\src\Git\gittype.h" />
-    <ClInclude Include="..\..\src\Git\MassiveGitTaskBase.h" />
-    <ClInclude Include="..\..\src\Git\TGitPath.h" />
-    <ClInclude Include="..\..\src\TortoiseMerge\FileTextLines.h" />
-    <ClInclude Include="..\..\src\TortoiseProc\gitlogcache.h" />
-    <ClInclude Include="..\..\src\TortoiseProc\lanes.h" />
-    <ClInclude Include="..\..\src\TortoiseProc\LogDlgHelper.h" />
-    <ClInclude Include="..\..\src\TortoiseProc\ProjectProperties.h" />
-    <ClInclude Include="..\..\src\TortoiseProc\SerialPatch.h" />
-    <ClInclude Include="..\..\src\TortoiseProc\UpdateCrypto.h" />
-    <ClInclude Include="..\..\src\TortoiseProc\UpdateDownloader.h" />
-    <ClInclude Include="..\..\src\Utils\CmdLineParser.h" />
-    <ClInclude Include="..\..\src\Utils\CommonAppUtils.h" />
-    <ClInclude Include="..\..\src\Utils\DebugHelpers.h" />
-    <ClInclude Include="..\..\src\Utils\DebugOutput.h" />
-    <ClInclude Include="..\..\src\Utils\DirFileEnum.h" />
-    <ClInclude Include="..\..\src\Utils\LruCache.h" />
-    <ClInclude Include="..\..\src\Utils\PathUtils.h" />
-    <ClInclude Include="..\..\src\Utils\ProfilingInfo.h" />
-    <ClInclude Include="..\..\src\Utils\ReaderWriterLock.h" />
-    <ClInclude Include="..\..\src\Utils\registry.h" />
     <ClInclude Include="..\..\src\Utils\SmartHandle.h" />
     <ClInclude Include="..\..\src\Utils\SmartLibgit2Ref.h" />
     <ClInclude Include="..\..\src\Utils\StringUtils.h" />
-    <ClInclude Include="..\..\src\Utils\SysInfo.h" />
     <ClInclude Include="..\..\src\Utils\UnicodeUtils.h" />
-    <ClInclude Include="..\..\src\Utils\UniqueQueue.h" />
-    <ClInclude Include="..\..\src\Utils\WindowsCredentialsStore.h" />
     <ClInclude Include="..\..\src\version.h" />
-    <ClInclude Include="AutoTempDir.h" />
-    <ClInclude Include="RepositoryFixtures.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Git\Git.cpp" />
-    <ClCompile Include="..\..\src\Git\GitAdminDir.cpp" />
-    <ClCompile Include="..\..\src\Git\GitIndex.cpp" />
-    <ClCompile Include="..\..\src\Git\GitRev.cpp" />
-    <ClCompile Include="..\..\src\Git\GitRevLoglist.cpp" />
-    <ClCompile Include="..\..\src\Git\GitRevRefBrowser.cpp" />
-    <ClCompile Include="..\..\src\Git\GitStatus.cpp" />
-    <ClCompile Include="..\..\src\Git\MassiveGitTaskBase.cpp" />
-    <ClCompile Include="..\..\src\Git\TGitPath.cpp" />
-    <ClCompile Include="..\..\src\TortoiseMerge\FileTextLines.cpp" />
-    <ClCompile Include="..\..\src\TortoiseProc\GitLogCache.cpp" />
-    <ClCompile Include="..\..\src\TortoiseProc\lanes.cpp" />
-    <ClCompile Include="..\..\src\TortoiseProc\LogDataVector.cpp" />
-    <ClCompile Include="..\..\src\TortoiseProc\ProjectProperties.cpp" />
-    <ClCompile Include="..\..\src\TortoiseProc\SerialPatch.cpp" />
-    <ClCompile Include="..\..\src\TortoiseProc\UpdateCrypto.cpp" />
-    <ClCompile Include="..\..\src\Utils\CmdLineParser.cpp" />
-    <ClCompile Include="..\..\src\Utils\CommonAppUtils.cpp" />
-    <ClCompile Include="..\..\src\Utils\DebugOutput.cpp" />
-    <ClCompile Include="..\..\src\Utils\DirFileEnum.cpp" />
-    <ClCompile Include="..\..\src\Utils\PathUtils.cpp" />
-    <ClCompile Include="..\..\src\Utils\ProfilingInfo.cpp" />
-    <ClCompile Include="..\..\src\Utils\ReaderWriterLock.cpp" />
-    <ClCompile Include="..\..\src\Utils\Registry.cpp" />
     <ClCompile Include="..\..\src\Utils\StringUtils.cpp" />
-    <ClCompile Include="..\..\src\Utils\SysInfo.cpp" />
     <ClCompile Include="..\..\src\Utils\UnicodeUtils.cpp" />
-    <ClCompile Include="..\..\src\Utils\WindowsCredentialsStore.cpp" />
-    <ClCompile Include="AutoTempDir.cpp" />
-    <ClCompile Include="CmdLineParserTest.cpp" />
-    <ClCompile Include="FileTextLinesTest.cpp" />
-    <ClCompile Include="GitAdminDirTest.cpp" />
-    <ClCompile Include="GitByteArrayTest.cpp" />
-    <ClCompile Include="GitHashTest.cpp" />
-    <ClCompile Include="GitIndexTest.cpp" />
-    <ClCompile Include="GitRevLoglistTest.cpp" />
-    <ClCompile Include="GitRevRefBrowseTest.cpp" />
-    <ClCompile Include="GitRevTest.cpp" />
-    <ClCompile Include="GitTest.cpp" />
-    <ClCompile Include="libgit2Test.cpp" />
-    <ClCompile Include="libgitTest.cpp" />
-    <ClCompile Include="LogDataVectorTest.cpp" />
-    <ClCompile Include="LruCacheTest.cpp" />
-    <ClCompile Include="PathUtilsTest.cpp" />
-    <ClCompile Include="ProjectPropertiesTest.cpp" />
-    <ClCompile Include="SerialPatchTest.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="StringUtilsTest.cpp" />
-    <ClCompile Include="TGitPathTest.cpp" />
-    <ClCompile Include="UniqueQueueTests.cpp" />
     <ClCompile Include="UnitTests.cpp" />
-    <ClCompile Include="UpdateCryptoTest.cpp" />
-    <ClCompile Include="WindowsCredentialsStoreTests.cpp" />
+    <ClCompile Include="versiontxt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ext\build\gtest.vcxproj">
       <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\ext\build\libgit2.vcxproj">
-      <Project>{2b4f366c-93ba-491e-87af-5ef7b37f75f7}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ext\gitdll\gitdll.vcxproj">
-      <Project>{4f0a55de-dafd-4a0b-a03d-2c14cb77e08f}</Project>
+    <ProjectReference Include="..\..\ext\build\libgit2-static.vcxproj">
+      <Project>{2b4f366c-93ba-491e-87af-5ef7b87e75f7}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

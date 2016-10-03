@@ -19,7 +19,6 @@
 
 #include "stdafx.h"
 #include "gtest/gtest.h"
-#include "gitindex.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -29,7 +28,3 @@ int _tmain(int argc, _TCHAR* argv[])
 	git_libgit2_shutdown();
 	return result;
 }
-
-CGitIndexFileMap g_IndexFileMap;
-CString g_sGroupingUUID;
-CString sOrigCWD;
