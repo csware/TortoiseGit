@@ -47,6 +47,47 @@ BOOL CPathUtils::MakeSureDirectoryPathExists(LPCTSTR path)
 	return CreateDirectory(internalpathbuf.get(), &attribs);
 }
 
+CString CPathUtils::GetWinApiPathFromAbsolutePath(const CString& path)
+{
+	int len = path.GetLength();
+	if (len < 3)
+	{
+		ASSERT(FALSE);
+		return path;
+	}
+
+	if (path[1] == L':')
+		return L"\\\\?\\" + path;
+
+	if (path[0] == L'\\')
+	{
+		if (path[1] == L'\\' && (path[2] == L'?' || path[2] == L'.'))
+		{
+			// wtf?! aber ok
+			return path;
+		}
+		// needs GetFullPathNameW to be sure that this is not \somepath.txt?!
+		return L"\\\\?\\UNC\\" + path;
+	}
+
+	ASSERT(FALSE);
+
+	return path;
+}
+
+bool CPathUtils::AbsolutePathFileExists(const CString& path)
+{
+	if (GetFileAttributes(GetWinApiPathFromAbsolutePath(path)) != INVALID_FILE_ATTRIBUTES)
+		return true;
+	DWORD err = GetLastError();
+	return !(((err == ERROR_FILE_NOT_FOUND) || (err == ERROR_PATH_NOT_FOUND) || (err == ERROR_INVALID_NAME)));
+}
+
+bool CPathUtils::AbsolutePathIsDirectory(const CString& path)
+{
+	return (GetFileAttributes(GetWinApiPathFromAbsolutePath(path)) & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
+}
+
 void CPathUtils::Unescape(char * psz)
 {
 	char * pszSource = psz;

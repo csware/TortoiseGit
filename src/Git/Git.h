@@ -440,8 +440,9 @@ public:
 
 	static int GetFileModifyTime(LPCTSTR filename, __int64* time, bool* isDir = nullptr, __int64* size = nullptr)
 	{
+		// look for: GetFileModifyTime(CombinePath
 		WIN32_FILE_ATTRIBUTE_DATA fdata;
-		if (GetFileAttributesEx(filename, GetFileExInfoStandard, &fdata))
+		if (GetFileAttributesEx(CPathUtils::GetWinApiPathFromAbsolutePath(filename), GetFileExInfoStandard, &fdata))
 		{
 			if(time)
 				*time = filetime_to_time_t(&fdata.ftLastWriteTime);

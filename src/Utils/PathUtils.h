@@ -44,6 +44,11 @@ public:
 	 */
 	static CStringA PathEscape(const CStringA& path);
 
+	static CString GetWinApiPathFromAbsolutePath(const CString& path);
+
+	static bool AbsolutePathFileExists(const CString& path);
+
+	static bool AbsolutePathIsDirectory(const CString& path);
 
 #ifdef CSTRING_AVAILABLE
 	/**

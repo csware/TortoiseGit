@@ -418,7 +418,7 @@ int CGitHeadFileList::GetPackRef(const CString &gitdir)
 
 	m_PackRefMap.clear();
 
-	CAutoFile hfile = CreateFile(PackRef,
+	CAutoFile hfile = CreateFile(CPathUtils::GetWinApiPathFromAbsolutePath(PackRef),
 		GENERIC_READ,
 		FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
 		nullptr,
@@ -501,7 +501,7 @@ int CGitHeadFileList::ReadHeadHash(const CString& gitdir)
 	if( CGit::GetFileModifyTime(m_HeadFile, &m_LastModifyTimeHead))
 		return -1;
 
-	CAutoFile hfile = CreateFile(m_HeadFile,
+	CAutoFile hfile = CreateFile(CPathUtils::GetWinApiPathFromAbsolutePath(m_HeadFile),
 		GENERIC_READ,
 		FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
 		nullptr,
@@ -552,7 +552,7 @@ int CGitHeadFileList::ReadHeadHash(const CString& gitdir)
 			return 0;
 		}
 
-		CAutoFile href = CreateFile(m_HeadRefFile,
+		CAutoFile href = CreateFile(CPathUtils::GetWinApiPathFromAbsolutePath(m_HeadRefFile),
 			GENERIC_READ,
 			FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
 			nullptr,
@@ -776,7 +776,7 @@ int CGitIgnoreItem::FetchIgnoreList(const CString &projectroot, const CString &f
 	if (CGit::GetFileModifyTime(file, &m_LastModifyTime))
 		return -1;
 
-	CAutoFile hfile = CreateFile(file,
+	CAutoFile hfile = CreateFile(CPathUtils::GetWinApiPathFromAbsolutePath(file),
 			GENERIC_READ,
 			FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
 			nullptr,
@@ -896,6 +896,7 @@ bool CGitIgnoreList::CheckFileChanged(const CString &path)
 
 bool CGitIgnoreList::CheckIgnoreChanged(const CString &gitdir, const CString &path, bool isDir)
 {
+	// TODO
 	CString temp(gitdir);
 	temp += L'\\';
 	temp += path;
@@ -914,7 +915,7 @@ bool CGitIgnoreList::CheckIgnoreChanged(const CString &gitdir, const CString &pa
 		CString tempOrig = temp;
 		temp += L"\\.git";
 
-		if (CGit::GitPathFileExists(temp))
+		if (CGit::GitPathFileExists(CPathUtils::GetWinApiPathFromAbsolutePath(temp)))
 		{
 			CString gitignore=temp;
 			gitignore += L"ignore";
@@ -954,7 +955,7 @@ bool CGitIgnoreList::CheckIgnoreChanged(const CString &gitdir, const CString &pa
 
 int CGitIgnoreList::FetchIgnoreFile(const CString &gitdir, const CString &gitignore, bool isGlobal)
 {
-	if (CGit::GitPathFileExists(gitignore)) //if .gitignore remove, we need remote cache
+	if (CGit::GitPathFileExists(CPathUtils::GetWinApiPathFromAbsolutePath(gitignore))) //if .gitignore remove, we need remote cache
 	{
 		CAutoWriteLock lock(m_SharedMutex);
 		m_Map[gitignore].FetchIgnoreList(gitdir, gitignore, isGlobal);
@@ -987,7 +988,7 @@ int CGitIgnoreList::LoadAllIgnoreFile(const CString &gitdir, const CString &path
 		CString tempOrig = temp;
 		temp += L"\\.git";
 
-		if (CGit::GitPathFileExists(temp))
+		if (CGit::GitPathFileExists(CPathUtils::GetWinApiPathFromAbsolutePath(temp)))
 		{
 			CString gitignore = temp;
 			gitignore += L"ignore";
@@ -1187,7 +1188,7 @@ int CGitIgnoreList::CheckIgnore(const CString &path, const CString &projectroot,
 		CString tempOrig = temp;
 		temp += L"\\.git";
 
-		if (CGit::GitPathFileExists(temp))
+		if (CGit::GitPathFileExists(CPathUtils::GetWinApiPathFromAbsolutePath(temp)))
 		{
 			CString gitignore = temp;
 			gitignore += L"ignore";

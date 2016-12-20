@@ -455,7 +455,7 @@ public:
 		auto lookup = find(thePath);
 		if (lookup == cend())
 		{
-			if (PathIsDirectory(path + L"\\.git"))
+			if (CPathUtils::AbsolutePathIsDirectory(path + L"\\.git"))
 			{
 				(*this)[thePath] = path + L"\\.git\\";
 				m_reverseLookup[thePath + L"\\.git"] = path;
@@ -478,7 +478,7 @@ public:
 
 	CString GetAdminDirConcat(const CString& path, const CString& subpath)
 	{
-		CString result(GetAdminDir(path));
+		CString result(GetAdminDir(path)); //TODO, prepend \\?\?
 		result += subpath;
 		return result;
 	}

@@ -19,10 +19,10 @@
 
 #pragma once
 #include "TGitPath.h"
+#include "PathUtils.h"
 
 class CGitFileName;
 
-#include "TGitPath.h"
 #include "GitHash.h"
 
 typedef enum type_git_wc_status_kind
@@ -73,7 +73,7 @@ typedef struct git_wc_status2_t
 
 typedef BOOL (*FILL_STATUS_CALLBACK)(const CString &path, git_wc_status_kind status, bool isDir, void *pdata, bool assumeValid, bool skipWorktree);
 
-static CString CombinePath(const CString& part1, const CString& part2)
+static CString CombinePath(const CString& part1, const CString& part2) // TODO: where is this used, maybe also prepend \\?\\, bei callback gehts i.d.r nicht?!
 {
 	CString path(part1);
 	path += L'\\';
@@ -92,7 +92,7 @@ public:
 	static int GetFileStatus(const CString& gitdir, CString path, git_wc_status_kind* status, BOOL IsFull = FALSE, BOOL IsRecursive = FALSE, BOOL isIgnore = TRUE, FILL_STATUS_CALLBACK callback = nullptr, void* pData = nullptr, bool* assumeValid = nullptr, bool* skipWorktree = nullptr);
 	static int GetDirStatus(const CString& gitdir, const CString& path, git_wc_status_kind* status, BOOL IsFull = false, BOOL IsRecursive = false, BOOL isIgnore = true);
 	static int EnumDirStatus(const CString &gitdir, const CString &path, git_wc_status_kind * status, BOOL IsFull = false, BOOL IsRecursive = false, BOOL isIgnore = true, FILL_STATUS_CALLBACK callback = nullptr, void *pData = nullptr);
-	static int GetFileList(CString path, std::vector<CGitFileName> &list);
+	static int GetFileList(const CString& path, std::vector<CGitFileName> &list);
 	static bool HasIgnoreFilesChanged(const CString &gitdir, const CString &subpaths, bool isDir);
 	static int LoadIgnoreFile(const CString &gitdir, const CString &subpaths, bool isDir);
 	static int IsUnderVersionControl(const CString &gitdir, const CString &path, bool isDir,bool *isVersion);

@@ -29,9 +29,9 @@ CString GitAdminDir::GetSuperProjectRoot(const CString& path)
 
 	do
 	{
-		if (CGit::GitPathFileExists(projectroot + L"\\.git"))
+		if (CGit::GitPathFileExists(CPathUtils::GetWinApiPathFromAbsolutePath(projectroot + L"\\.git")))
 		{
-			if (CGit::GitPathFileExists(projectroot + L"\\.gitmodules"))
+			if (CGit::GitPathFileExists(CPathUtils::GetWinApiPathFromAbsolutePath(projectroot + L"\\.gitmodules")))
 				return projectroot;
 			else
 				return L"";
@@ -50,7 +50,7 @@ CString GitAdminDir::GetSuperProjectRoot(const CString& path)
 CString GitAdminDir::GetGitTopDir(const CString& path)
 {
 	CString str;
-	HasAdminDir(path,!!PathIsDirectory(path),&str);
+	HasAdminDir(path, !CPathUtils::AbsolutePathIsDirectory(path), &str);
 	return str;
 }
 
@@ -61,12 +61,12 @@ bool GitAdminDir::IsWorkingTreeOrBareRepo(const CString& path)
 
 bool GitAdminDir::HasAdminDir(const CString& path)
 {
-	return HasAdminDir(path, !!PathIsDirectory(path));
+	return HasAdminDir(path, !CPathUtils::AbsolutePathIsDirectory(path));
 }
 
 bool GitAdminDir::HasAdminDir(const CString& path,CString* ProjectTopDir)
 {
-	return HasAdminDir(path, !!PathIsDirectory(path),ProjectTopDir);
+	return HasAdminDir(path, !CPathUtils::AbsolutePathIsDirectory(path), ProjectTopDir);
 }
 
 bool GitAdminDir::HasAdminDir(const CString& path, bool bDir, CString* ProjectTopDir)
@@ -98,7 +98,7 @@ bool GitAdminDir::HasAdminDir(const CString& path, bool bDir, CString* ProjectTo
 
 	for (;;)
 	{
-		if (CGit::GitPathFileExists(sDirName + L"\\.git"))
+		if (CGit::GitPathFileExists(CPathUtils::GetWinApiPathFromAbsolutePath(sDirName + L"\\.git")))
 		{
 			if(ProjectTopDir)
 			{
@@ -139,7 +139,7 @@ bool GitAdminDir::GetAdminDirPath(const CString &projectTopDir, CString& adminDi
 	}
 
 	CString sDotGitPath = projectTopDir + L'\\' + GetAdminDirName();
-	if (CTGitPath(sDotGitPath).IsDirectory())
+	if (CTGitPath(sDotGitPath).IsDirectory()) // remove overhead
 	{
 		sDotGitPath.TrimRight(L'\\');
 		sDotGitPath.AppendChar(L'\\');
@@ -158,12 +158,12 @@ bool GitAdminDir::GetAdminDirPath(const CString &projectTopDir, CString& adminDi
 
 CString GitAdminDir::ReadGitLink(const CString& topDir, const CString& dotGitPath)
 {
-	CAutoFILE pFile = _wfsopen(dotGitPath, L"r", SH_DENYWR);
+	CAutoFILE pFile = _wfsopen(CPathUtils::GetWinApiPathFromAbsolutePath(dotGitPath), L"r", SH_DENYWR);
 
 	if (!pFile)
 		return L"";
 
-	int size = 65536;
+	int size = 65536;// TODO
 	auto buffer = std::make_unique<char[]>(size);
 	int length = (int)fread(buffer.get(), sizeof(char), size, pFile);
 	CStringA gitPathA(buffer.get(), length);
@@ -178,6 +178,7 @@ CString GitAdminDir::ReadGitLink(const CString& topDir, const CString& dotGitPat
 	{
 		gitPath = topDir + L'\\' + gitPath;
 		CString adminDir;
+		// TODO where is this used, becasue this fails with long paths. do we really need to unpack it?
 		PathCanonicalize(CStrBuf(adminDir, MAX_PATH), gitPath);
 		return adminDir;
 	}
@@ -225,10 +226,10 @@ bool GitAdminDir::IsBareRepo(const CString& path)
 			return false;
 	}
 
-	if (!PathFileExists(path + L"\\HEAD") || !PathFileExists(path + L"\\config"))
+	if (!CPathUtils::AbsolutePathFileExists(path + L"\\HEAD") || !CPathUtils::AbsolutePathFileExists(path + L"\\config"))
 		return false;
 
-	if (!PathFileExists(path + L"\\objects\\") || !PathFileExists(path + L"\\refs\\"))
+	if (!CPathUtils::AbsolutePathFileExists(path + L"\\objects\\") || !CPathUtils::AbsolutePathFileExists(path + L"\\refs\\"))
 		return false;
 
 	return true;

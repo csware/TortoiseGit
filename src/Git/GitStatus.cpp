@@ -290,11 +290,11 @@ int GitStatus::IsIgnore(const CString &gitdir, const CString &path, bool *isIgno
 	return 0;
 }
 
-int GitStatus::GetFileList(CString path, std::vector<CGitFileName> &list)
+int GitStatus::GetFileList(const CString& path, std::vector<CGitFileName> &list)
 {
-	path += L"\\*.*";
 	WIN32_FIND_DATA data;
-	HANDLE handle = ::FindFirstFileEx(path, SysInfo::Instance().IsWin7OrLater() ? FindExInfoBasic : FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, SysInfo::Instance().IsWin7OrLater() ? FIND_FIRST_EX_LARGE_FETCH : 0);
+	HANDLE handle = ::FindFirstFileEx(CPathUtils::GetWinApiPathFromAbsolutePath(path).TrimRight(L'\\') + L"\\*.*", SysInfo::Instance().IsWin7OrLater() ? FindExInfoBasic : FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, SysInfo::Instance().IsWin7OrLater() ? FIND_FIRST_EX_LARGE_FETCH : 0);
+	ASSERT(handle != INVALID_HANDLE_VALUE);
 	do
 	{
 		if (wcscmp(data.cFileName, L".git") == 0)
@@ -693,7 +693,7 @@ int GitStatus::GetDirStatus(const CString& gitdir, const CString& subpath, git_w
 #ifdef TGITCACHE
 bool GitStatus::IsExistIndexLockFile(CString sDirName)
 {
-	if (!PathIsDirectory(sDirName))
+	if (!CPathUtils::AbsolutePathIsDirectory(sDirName))
 	{
 		int x = sDirName.ReverseFind(L'\\');
 		if (x < 2)
@@ -704,9 +704,9 @@ bool GitStatus::IsExistIndexLockFile(CString sDirName)
 
 	for (;;)
 	{
-		if (PathFileExists(CombinePath(sDirName, L".git")))
+		if (CPathUtils::AbsolutePathFileExists(CombinePath(sDirName, L".git")))
 		{
-			if (PathFileExists(g_AdminDirMap.GetAdminDirConcat(sDirName, L"index.lock")))
+			if (CPathUtils::AbsolutePathFileExists(g_AdminDirMap.GetAdminDirConcat(sDirName, L"index.lock")))
 				return true;
 
 			return false;
