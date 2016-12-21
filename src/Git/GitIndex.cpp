@@ -80,7 +80,7 @@ int CGitIndexList::ReadIndex(CString dgitdir)
 	this->clear();
 
 	CAutoLocker lock(m_critRepoSec);
-	if (repository.Open(dgitdir))
+	if (repository.Open(CPathUtils::GetWinApiPathFromAbsolutePath(dgitdir)))
 		return -1;
 
 	// add config files
@@ -722,7 +722,7 @@ int CGitHeadFileList::ReadTree()
 	CAutoWriteLock lock(m_SharedMutex);
 	ATLASSERT(empty());
 
-	CAutoRepository repository(m_Gitdir);
+	CAutoRepository repository(CPathUtils::GetWinApiPathFromAbsolutePath(m_Gitdir));
 	CAutoCommit commit;
 	CAutoTree tree;
 	bool ret = repository;

@@ -320,8 +320,6 @@ int GitStatus::GetFileList(const CString& path, std::vector<CGitFileName> &list)
 
 	}while(::FindNextFile(handle, &data));
 
-	FindClose(handle);
-
 	std::sort(list.begin(), list.end(), SortCGitFileName);
 	return 0;
 }
