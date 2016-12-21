@@ -20,6 +20,7 @@
 
 #include "stdafx.h"
 #include "StringUtils.h"
+#include "AutoTempDir.h"
 
 TEST(CStringUtils, WordWrap)
 {
@@ -335,4 +336,20 @@ TEST(CStringUtils, EndsWithI)
 	EXPECT_FALSE(CStringUtils::EndsWithI(heystack, L"someteSte"));
 	EXPECT_FALSE(CStringUtils::EndsWithI(heystack, L"text"));
 	EXPECT_FALSE(CStringUtils::EndsWithI(heystack, L"xt"));
+}
+
+TEST(CStringUtils, WriteStringToTextFile)
+{
+	CAutoTempDir tempDir;
+	CString tmpFile = tempDir.GetTempDir() + L"\\file.txt";
+	CString oneline = L"No new line";
+	CString onelineendswithcr = L"One line\r";
+	CString onelineendswithlf = L"One line\n";
+	CString onelineendswithcrlf = L"One line\r\n";
+	CString twolinecr = L"Two\rlines";
+	CString twolinelf = L"Two\nlines";
+	CString twolinecrlf = L"Two\r\nlines";
+	struct _stat32 stat_buf = { 0 };
+	EXPECT_EQ(0, _wstat32(tmpFile, &stat_buf));
+	EXPECT_EQ(139, stat_buf.st_size);
 }

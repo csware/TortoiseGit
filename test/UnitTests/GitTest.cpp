@@ -1302,6 +1302,16 @@ static void GetOneFile(CGit& m_Git)
 	EXPECT_EQ(108, fileContents.GetLength());
 	EXPECT_STREQ(L"ä#äf34ööcöäß€9875oe\r\nfgdjkglsfdg\r\nöäöü45g\r\nfdgi&§$%&hfdsgä\r\nä#äf34öööäß€9875oe\r\nöäcüpfgmfdg\r\n€fgfdsg\r\n45\r\näü", fileContents);
 	::DeleteFile(tmpFile);
+
+	EXPECT_EQ(0, m_Git.GetOneFile(L"5e702e1712aa6f8cd8e0328a87be006f3a923710", CTGitPath(L"1fc3c9688e27596d8717b54f2939dc951568f6cb"), tmpFile));
+	EXPECT_EQ(true, CStringUtils::ReadStringFromTextFile(tmpFile, fileContents));
+	EXPECT_EQ(0, _wstat32(tmpFile, &stat_buf));
+	EXPECT_EQ(13, stat_buf.st_size);
+	EXPECT_EQ(13, fileContents.GetLength());
+	EXPECT_STREQ(L"A note here!\n", fileContents);
+	::DeleteFile(tmpFile);
+
+	// binary file
 }
 
 TEST_P(CBasicGitWithTestRepoFixture, GetOneFile)
