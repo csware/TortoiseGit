@@ -315,8 +315,8 @@ public:
 class CGitIgnoreList
 {
 private:
-	bool CheckFileChanged(const CString &path);
-	int FetchIgnoreFile(const CString &gitdir, const CString &gitignore, bool isGlobal);
+	bool CheckFileChanged(const CString &path, bool& exists);
+	int FetchIgnoreFile(const CString &gitdir, const CString &gitignore, bool isGlobal, bool exists);
 
 	int  CheckIgnore(const CString &path, const CString &root, bool isDir);
 	int CheckFileAgainstIgnoreList(const CString &ignorefile, const CStringA &patha, const char * base, int &type);
