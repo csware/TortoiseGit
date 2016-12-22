@@ -947,7 +947,7 @@ int CGitIgnoreList::LoadAllIgnoreFile(const CString &gitdir, const CString &path
 				FetchIgnoreFile(gitdir, wcglobalgitignore, true, exists);
 			}
 
-			if (CheckAndUpdateCoreExcludefile(adminDir))
+			if (CheckAndUpdateCoreExcludefile(adminDir, exists))
 			{
 				CString excludesFile;
 				{
@@ -955,7 +955,7 @@ int CGitIgnoreList::LoadAllIgnoreFile(const CString &gitdir, const CString &path
 					excludesFile = m_CoreExcludesfiles[adminDir];
 				}
 				if (!excludesFile.IsEmpty())
-					FetchIgnoreFile(gitdir, excludesFile, true, true);
+					FetchIgnoreFile(gitdir, excludesFile, true, exists);
 			}
 
 			return 0;
@@ -998,7 +998,7 @@ bool CGitIgnoreList::CheckAndUpdateGitSystemConfigPath(bool force)
 	}
 	return false;
 }
-bool CGitIgnoreList::CheckAndUpdateCoreExcludefile(const CString &adminDir)
+bool CGitIgnoreList::CheckAndUpdateCoreExcludefile(const CString& adminDir, bool& globalexcludefileexists)
 {
 	CString projectConfig(adminDir); 
 	projectConfig += L"config";
@@ -1007,21 +1007,22 @@ bool CGitIgnoreList::CheckAndUpdateCoreExcludefile(const CString &adminDir)
 
 	CAutoWriteLock lock(m_coreExcludefilesSharedMutex);
 	bool hasChanged = CheckAndUpdateGitSystemConfigPath();
-	hasChanged = hasChanged || CheckFileChanged(projectConfig);
-	hasChanged = hasChanged || CheckFileChanged(globalConfig);
-	hasChanged = hasChanged || CheckFileChanged(globalXDGConfig);
+	hasChanged = hasChanged || CheckFileChanged(projectConfig, globalexcludefileexists);
+	hasChanged = hasChanged || CheckFileChanged(globalConfig, globalexcludefileexists);
+	hasChanged = hasChanged || CheckFileChanged(globalXDGConfig, globalexcludefileexists);
 	if (!m_sGitProgramDataConfigPath.IsEmpty())
-		hasChanged = hasChanged || CheckFileChanged(m_sGitProgramDataConfigPath);
+		hasChanged = hasChanged || CheckFileChanged(m_sGitProgramDataConfigPath, globalexcludefileexists);
 	if (!m_sGitSystemConfigPath.IsEmpty())
-		hasChanged = hasChanged || CheckFileChanged(m_sGitSystemConfigPath);
+		hasChanged = hasChanged || CheckFileChanged(m_sGitSystemConfigPath, globalexcludefileexists);
 
 	CString excludesFile;
 	{
 		CAutoReadLock lock2(m_SharedMutex);
 		excludesFile = m_CoreExcludesfiles[adminDir];
 	}
+	globalexcludefileexists = false;
 	if (!excludesFile.IsEmpty())
-		hasChanged = hasChanged || CheckFileChanged(excludesFile);
+		hasChanged = hasChanged || CheckFileChanged(excludesFile, globalexcludefileexists);
 
 	if (!hasChanged)
 		return false;

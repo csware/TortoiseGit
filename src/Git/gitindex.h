@@ -331,7 +331,7 @@ private:
 	// if the path changed, the cache is update
 	// force is only ised in constructor
 	bool CheckAndUpdateGitSystemConfigPath(bool force = true);
-	bool CheckAndUpdateCoreExcludefile(const CString &adminDir);
+	bool CheckAndUpdateCoreExcludefile(const CString& adminDir, bool& globalexcludefileexists);
 	const CString GetWindowsHome();
 
 public:
