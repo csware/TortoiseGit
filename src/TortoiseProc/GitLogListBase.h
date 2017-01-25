@@ -468,6 +468,7 @@ public:
 protected:
 	virtual void GetParentHashes(GitRev* pRev, GIT_REV_LIST& parentHash);
 	virtual void ContextMenuAction(int cmd,int FirstSelect, int LastSelect, CMenu * menu)=0;
+	bool IsHeadEqualTo(const CGitHash& hash);
 	void UpdateSubmodulePointer()
 	{
 		m_superProjectHash.Empty();

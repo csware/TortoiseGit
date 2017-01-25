@@ -547,6 +547,8 @@ void CGitLogList::ContextMenuAction(int cmd,int FirstSelect, int LastSelect, CMe
 
 				CAppUtils::Switch(str);
 			}
+			if (!IsHeadEqualTo(pSelLogEntry->m_CommitHash))
+				GetParent()->PostMessage(WM_COMMAND, ID_LOGDLG_REFRESH, 0);
 			ReloadHashMap();
 			Invalidate();
 			::PostMessage(this->GetParent()->m_hWnd,MSG_REFLOG_CHANGED,0,0);
@@ -561,6 +563,8 @@ void CGitLogList::ContextMenuAction(int cmd,int FirstSelect, int LastSelect, CMe
 					CGit::GetShortName(*branch, name, L"refs/heads/");
 					CAppUtils::PerformSwitch(name);
 				}
+				if (!IsHeadEqualTo(pSelLogEntry->m_CommitHash))
+					GetParent()->PostMessage(WM_COMMAND, ID_LOGDLG_REFRESH, 0);
 				ReloadHashMap();
 				Invalidate();
 				::PostMessage(this->GetParent()->m_hWnd,MSG_REFLOG_CHANGED,0,0);

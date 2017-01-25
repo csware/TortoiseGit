@@ -4536,3 +4536,12 @@ void CGitLogListBase::DrawDropInsertMarkerLine(int nIndex)
 
 	ReleaseDC(pDC);
 }
+
+bool CGitLogListBase::IsHeadEqualTo(const CGitHash& hash);
+{
+	CGitHash head;
+	if (g_Git.GetHash(head, L"HEAD"))
+	return true;
+
+	return (head == hash);
+}
