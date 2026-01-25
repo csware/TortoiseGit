@@ -504,13 +504,38 @@ void CDirectoryWatcher::WorkerThread()
 							nullptr); //no completion routine!
 					}
 
+					struct cache
+					{
+						bool available = false;
+						CTGitPath dir;
+						CString topDir;
+						bool hasAdminDir = false;
+					} cache;
 					while (!notifyPaths.empty())
 					{
 						CTGitPath path = notifyPaths.Pop();
-						if (path.HasAdminDir())
+						const bool useCache = cache.available && cache.dir == path.GetDirectoryOrParentIfDeleted();
+						if (useCache)
+						{
+							// The file/folder in this path is in the same folder as the last path was in.
+							// That means the topDir must also be the same, so we can use the cached information.
+							path.SetHasAdminDir(cache.hasAdminDir, cache.topDir);
+						}
+						const bool hasAdminDir = path.HasAdminDir();
+						if (hasAdminDir)
 						{
 							CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": change notification for %s\n", path.GetWinPath());
 							m_FolderCrawler->AddPathForUpdate(path);
+						}
+						if (!useCache && !notifyPaths.empty())
+						{
+							// We just calculated the topDir by hand. That's a bit expensive,
+							// so we cache it here just in case the next path is in the same
+							// folder.
+							cache.dir = path.GetDirectoryOrParentIfDeleted();
+							path.HasAdminDir(&cache.topDir);
+							cache.hasAdminDir = hasAdminDir;
+							cache.available = true;
 						}
 					}
 

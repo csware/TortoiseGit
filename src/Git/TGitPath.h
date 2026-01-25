@@ -135,6 +135,11 @@ public:
 	 */
 	CTGitPath GetDirectory() const;
 	/**
+	 * Same as above, except in the case that the path points to nothing (to a deleted file/folder).
+	 * In that case GetDirectory returns the path unchanged and GetDirectoryOrParentIfDeleted returns the path to the parent.
+	 */
+	CTGitPath GetDirectoryOrParentIfDeleted() const;
+	/**
 	* Returns the directory which contains the item the path refers to.
 	* If the path is a directory, then this returns the directory above it.
 	* If the path is to a file, then this returns the directory which contains the path
@@ -248,6 +253,7 @@ public:
 	 * contains an admin directory.
 	 */
 	bool HasAdminDir(CString* projectTopDir = nullptr, bool force = false) const;
+	void SetHasAdminDir(bool hasAdminDir, const CString& projectTopDir) const;
 	bool HasSubmodules() const;
 	bool HasGitSVNDir() const;
 	bool IsBisectActive() const;

@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2015-2023, 2025 - TortoiseGit
+// Copyright (C) 2015-2023, 2025-2026 - TortoiseGit
 // Copyright (C) 2003-2008 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -36,8 +36,18 @@ TEST(CTGitPath, GetDirectoryTest)
 	CTGitPath testPath;
 	// This is a file which we know will always be there
 	testPath.SetFromUnknown(sWinDir + L"\\win.ini");
+	EXPECT_TRUE(testPath.Exists());
 	EXPECT_FALSE(testPath.IsDirectory());
 	EXPECT_STREQ(sWinDir,testPath.GetDirectory().GetWinPathString());
+	EXPECT_STREQ(sWinDir,testPath.GetDirectoryOrParentIfDeleted().GetWinPathString());
+	EXPECT_STREQ(sWinDir, testPath.GetContainingDirectory().GetWinPathString());
+
+	// This is a file MS is unlikely to add
+	testPath.SetFromUnknown(sWinDir + L"\\windows_sucks.ini");
+	EXPECT_FALSE(testPath.Exists());
+	EXPECT_FALSE(testPath.IsDirectory());
+	EXPECT_STREQ(testPath.GetWinPathString(),testPath.GetDirectory().GetWinPathString());
+	EXPECT_STREQ(sWinDir,testPath.GetDirectoryOrParentIfDeleted().GetWinPathString());
 	EXPECT_STREQ(sWinDir, testPath.GetContainingDirectory().GetWinPathString());
 
 	// Now do the test on the win directory itself - It's hard to be sure about the containing directory
