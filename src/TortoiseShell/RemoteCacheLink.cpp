@@ -179,6 +179,8 @@ bool CRemoteCacheLink::GetStatusFromRemoteCache(const CTGitPath& Path, TGITCache
 	request.flags = 0;
 	if(bRecursive)
 		request.flags |= TGITCACHE_FLAGS_RECUSIVE_STATUS;
+	if (Path.IsDirectoryKnown())
+		request.flags |= TGITCACHE_FLAGS_FOLDERISKNOWN | (Path.IsDirectory() ? TGITCACHE_FLAGS_ISFOLDER : 0);
 	wcsncpy_s(request.path, Path.GetWinPath(), _countof(request.path) - 1);
 	SecureZeroMemory(&m_Overlapped, sizeof(OVERLAPPED));
 	m_Overlapped.hEvent = m_hEvent;

@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2008-2025 - TortoiseGit
+// Copyright (C) 2008-2026 - TortoiseGit
 // Copyright (C) 2003-2008, 2014 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -123,6 +123,8 @@ public:
 	 * Returns true if the path points to a directory
 	 */
 	bool IsDirectory() const;
+
+	bool IsDirectoryKnown() const { return m_bDirectoryKnown; }
 
 	CTGitPath GetSubPath(const CTGitPath &root) const;
 
