@@ -624,9 +624,11 @@ void CCachedDirectory::UpdateCurrentStatus()
 	if(!parentPath.IsEmpty())
 	{
 		// We have a parent
-		// just version controled directory need to cache.
-		CString root1, root2;
-		if (parentPath.HasAdminDir(&root1) && (CGitStatusCache::Instance().IsRecurseSubmodules() || m_directoryPath.HasAdminDir(&root2) && CPathUtils::ArePathStringsEqualWithCase(root1, root2)))
+		// just version controlled directory need to cache.
+		CString ownRoot;
+		m_directoryPath.HasAdminDir(&ownRoot);
+		const bool sameRoot = !CPathUtils::ArePathStringsEqualWithCase(m_directoryPath.GetWinPathString(), ownRoot); // If our directory is different than our root, our parent must have the same root.
+		if (sameRoot || (CGitStatusCache::Instance().IsRecurseSubmodules() && parentPath.HasAdminDir()))
 		{
 			CCachedDirectory * cachedDir = CGitStatusCache::Instance().GetDirectoryCacheEntry(parentPath);
 			if (cachedDir)
