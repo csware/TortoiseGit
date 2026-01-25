@@ -396,7 +396,7 @@ void CDirectoryWatcher::WorkerThread()
 				if (pdi)
 				{
 					BOOL bRet = false;
-					std::list<CTGitPath> notifyPaths;
+					UniqueQueue<CTGitPath> notifyPaths; // Duplicate notifications are quite common, so we deduplicate them
 					{
 						AutoLocker lock(m_critSec);
 						// in case the CDirectoryWatcher objects have been cleaned,
@@ -487,11 +487,7 @@ void CDirectoryWatcher::WorkerThread()
 								}
 
 								CTGitPath path(buf);
-								if (!path.HasAdminDir())
-									continue;
-
-								CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": change notification for %s\n", buf);
-								notifyPaths.push_back(path);
+								notifyPaths.Push(path);
 							}
 						} while ((nOffset > 0)&&(nOffset < READ_DIR_CHANGE_BUFFER_SIZE));
 
@@ -507,11 +503,14 @@ void CDirectoryWatcher::WorkerThread()
 							&pdi->m_Overlapped,
 							nullptr); //no completion routine!
 					}
-					if (!notifyPaths.empty())
+
+					while (!notifyPaths.empty())
 					{
-						for (auto nit = notifyPaths.cbegin(); nit != notifyPaths.cend(); ++nit)
+						CTGitPath path = notifyPaths.Pop();
+						if (path.HasAdminDir())
 						{
-							m_FolderCrawler->AddPathForUpdate(*nit);
+							CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": change notification for %s\n", path.GetWinPath());
+							m_FolderCrawler->AddPathForUpdate(path);
 						}
 					}
 
