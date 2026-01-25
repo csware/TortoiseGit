@@ -714,33 +714,13 @@ int GitStatus::GetDirStatus(const CString& gitdir, const CString& subpath, git_w
 #endif
 
 #ifdef TGITCACHE
-bool GitStatus::IsExistIndexLockFile(CString sDirName)
+bool GitStatus::IsExistIndexLockFile(const CTGitPath& path)
 {
-	if (!PathIsDirectory(sDirName))
-	{
-		const int x = sDirName.ReverseFind(L'\\');
-		if (x < 2)
-			return false;
-
-		sDirName.Truncate(x);
-	}
-
-	for (;;)
-	{
-		if (PathFileExists(CombinePath(sDirName, L".git")))
-		{
-			if (PathFileExists(g_AdminDirMap.GetWorktreeAdminDirConcat(sDirName, L"index.lock")))
-				return true;
-
-			return false;
-		}
-
-		const int x = sDirName.ReverseFind(L'\\');
-		if (x < 2)
-			return false;
-
-		sDirName.Truncate(x);
-	}
+	CString rootDir;
+	if (!path.HasAdminDir(&rootDir))
+		return false;
+	CString indexPath = g_AdminDirMap.GetWorktreeAdminDirConcat(rootDir, L"index.lock");
+	return !!PathFileExists(indexPath);
 }
 #endif
 

@@ -77,7 +77,7 @@ public:
 	static int GetDirStatus(const CString& gitdir, const CString& path, git_wc_status_kind* status, BOOL IsFull = false, BOOL IsRecursive = false, BOOL isIgnore = true);
 	static int EnumDirStatus(const CString& gitdir, const CString& path, git_wc_status_kind* dirstatus, FILL_STATUS_CALLBACK callback, void* pData);
 	static int GetFileList(const CString& path, std::vector<CGitFileName>& list, bool& isRepoRoot, bool ignoreCase);
-	static bool IsExistIndexLockFile(CString gitdir);
+	static bool IsExistIndexLockFile(const CTGitPath& path);
 	static bool ReleasePath(const CString &gitdir);
 	static bool ReleasePathsRecursively(const CString &rootpath);
 
