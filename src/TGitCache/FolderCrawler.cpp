@@ -389,6 +389,12 @@ void CFolderCrawler::WorkerThread()
 							Sleep(50);
 						continue;
 					}
+
+					if (m_foldersToUpdate.Any([&](const CTGitPath& folder){ return folder.IsAncestorOf(workingPath); }))
+					{
+						CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": Not crawling folder: \"%s\". Already in queue.\n", workingPath.GetWinPath());
+						continue;
+					}
 				}
 				if ((!m_blockedPath.IsEmpty())&&(m_blockedPath.IsAncestorOf(workingPath)))
 					continue;

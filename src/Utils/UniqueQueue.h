@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2013, 2020, 2023 - TortoiseGit
+// Copyright (C) 2013, 2020, 2023, 2026 - TortoiseGit
 // Copyright (C) 2010-2011, 2015 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -48,6 +48,8 @@ public:
 	size_t			Push(const T &value);
 	T				Pop();
 	size_t			erase(const T &value);
+	template <class U>
+	bool			Any(U pred) const;
 	size_t			size() const { return m_Queue.size(); }
 	bool			empty() const { return m_Queue.empty(); }
 private:
@@ -156,4 +158,16 @@ size_t UniqueQueue<T>::erase(const T &value)
 	}
 
 	return m_QueueTMap.size();
+}
+
+template <class T>
+template <class U>
+bool UniqueQueue<T>::Any(U pred) const
+{
+	for (auto qIt = m_Queue.cbegin(); qIt != m_Queue.cend(); ++qIt)
+	{
+		if (pred(qIt->value))
+			return true;
+	}
+	return false;
 }

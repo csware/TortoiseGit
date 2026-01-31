@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2015, 2018 - TortoiseGit
+// Copyright (C) 2015, 2018, 2026 - TortoiseGit
 // Copyright (C) 2010 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -38,6 +38,7 @@ TEST(UniqueQueue, CString)
 	EXPECT_EQ(3U, myQueue.erase(L"doesnotexist"));
 	myQueue.Push(CString(L"three"));
 	EXPECT_EQ(3U, myQueue.size());
+	EXPECT_TRUE(myQueue.Any([](const CString& x){ return x.GetLength() == 3; }));
 	EXPECT_EQ(2U, myQueue.erase(CString(L"three")));
 	EXPECT_EQ(2U, myQueue.size());
 	myQueue.Push(CString(L"three"));
@@ -45,9 +46,12 @@ TEST(UniqueQueue, CString)
 
 	EXPECT_TRUE(myQueue.Pop().Compare(L"two") == 0);
 	EXPECT_EQ(2U, myQueue.size());
+	EXPECT_TRUE(myQueue.Any([](const CString& x){ return x.GetLength() == 3; }));
 	EXPECT_TRUE(myQueue.Pop().Compare(L"one") == 0);
 	EXPECT_EQ(1U, myQueue.size());
+	EXPECT_FALSE(myQueue.Any([](const CString& x){ return x.GetLength() == 3; }));
 	EXPECT_TRUE(myQueue.Pop().Compare(L"three") == 0);
 	EXPECT_EQ(0U, myQueue.size());
+	EXPECT_FALSE(myQueue.Any([](const CString& x){ return x.GetLength() == 3; }));
 	EXPECT_TRUE(myQueue.Pop().IsEmpty());
 }
