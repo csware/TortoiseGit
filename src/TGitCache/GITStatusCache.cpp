@@ -331,6 +331,7 @@ ULONGLONG CGitStatusCache::RemoveTimedoutBlocks()
 
 void CGitStatusCache::ClearShortTermShellCache(const CTGitPath& path)
 {
+	AutoLocker lock(m_critSec);
 	if (path.IsEquivalentToWithoutCase(m_mostRecentPath))
 		m_mostRecentExpiresAt = 0;
 }
@@ -497,15 +498,21 @@ CStatusCacheEntry CGitStatusCache::GetStatusForPath(const CTGitPath& path, DWORD
 	LONGLONG now = static_cast<LONGLONG>(GetTickCount64());
 	if(now-m_mostRecentExpiresAt < 0)
 	{
+		AutoLocker lock(m_critSec);
 		if (path.IsEquivalentTo(m_mostRecentPath))
 			return m_mostRecentStatus;
 	}
-	{
-		AutoLocker lock(m_critSec);
-		m_mostRecentPath = path;
-		m_mostRecentExpiresAt = now + 1000;
-	}
 
+	CStatusCacheEntry status = GetStatusForPathInternal(path, bRecursive);
+	AutoLocker lock(m_critSec);
+	m_mostRecentPath = path;
+	m_mostRecentExpiresAt = now + 1000;
+	m_mostRecentStatus = status;
+	return m_mostRecentStatus;
+}
+
+CStatusCacheEntry CGitStatusCache::GetStatusForPathInternal(const CTGitPath& path, bool bRecursive)
+{
 	if (IsPathGood(path))
 	{
 		// Stop the crawler starting on a new folder while we're doing this much more important task...
@@ -519,12 +526,7 @@ CStatusCacheEntry CGitStatusCache::GetStatusForPath(const CTGitPath& path, DWORD
 		if (cachedDir)
 		{
 			//CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": GetStatusForMember %d\n", bFetch);
-			CStatusCacheEntry entry = cachedDir->GetStatusForMember(path, bRecursive, false);
-			{
-				AutoLocker lock(m_critSec);
-				m_mostRecentStatus = entry;
-				return m_mostRecentStatus;
-			}
+			return cachedDir->GetStatusForMember(path, bRecursive, false);
 		}
 	}
 	else
@@ -535,33 +537,22 @@ CStatusCacheEntry CGitStatusCache::GetStatusForPath(const CTGitPath& path, DWORD
 		if (cachedDir)
 		{
 			if (path.IsDirectory())
-			{
-				CStatusCacheEntry entry = cachedDir->GetOwnStatus(false);
-				AutoLocker lock(m_critSec);
-				m_mostRecentStatus = entry;
-				return m_mostRecentStatus;
-			}
+				return cachedDir->GetOwnStatus(false);
 			else
 			{
 				// We've found this directory in the cache
-				CStatusCacheEntry entry = cachedDir->GetCacheStatusForMember(path);
-				{
-					AutoLocker lock(m_critSec);
-					m_mostRecentStatus = entry;
-					return m_mostRecentStatus;
-				}
+				return cachedDir->GetCacheStatusForMember(path);
 			}
 		}
 	}
-	AutoLocker lock(m_critSec);
 	CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": ignored no good path %s\n", path.GetWinPath());
-	m_mostRecentStatus = CStatusCacheEntry();
+	CStatusCacheEntry status;
 	if (m_shellCache.ShowExcludedAsNormal() && path.IsDirectory() && m_shellCache.HasGITAdminDir(path.GetWinPath(), true))
 	{
 		CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": force status %s\n", path.GetWinPath());
-		m_mostRecentStatus.ForceStatus(git_wc_status_normal);
+		status.ForceStatus(git_wc_status_normal);
 	}
-	return m_mostRecentStatus;
+	return status;
 }
 
 void CGitStatusCache::AddFolderForCrawling(const CTGitPath& path)

@@ -104,6 +104,7 @@ public:
 	CReaderWriterLock& GetGuard() { return m_guard; }
 	bool m_bClearMemory = false;
 private:
+	CStatusCacheEntry GetStatusForPathInternal(const CTGitPath& path, bool bRecursive);
 	static CString GetSpecialFolder(REFKNOWNFOLDERID rfid);
 	bool RemoveCacheForDirectory(CCachedDirectory* cdir, const CTGitPath& origPath);
 	void RemoveCacheForDirectoryChildren(CCachedDirectory* cdir, const CTGitPath& origPath);
