@@ -129,9 +129,11 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD dwAttrib)
 	// since the shell calls each and every overlay handler with the same filepath
 	// we use a small 'fast' cache of just one path here.
 	// To make sure that cache expires, clear it as soon as one handler is used.
+	// g_filepath isn't cleared when the status is none, but in that case we clear
+	// the cache when this is called with the same filestate again.
 
 	AutoLocker lock(g_csGlobalCOMGuard);
-	if (wcscmp(pPath, g_filepath.c_str()) == 0)
+	if (wcscmp(pPath, g_filepath.c_str()) == 0 && g_filestate != m_State)
 	{
 		status = g_filestatus;
 		readonlyoverlay = g_readonlyoverlay;
@@ -235,6 +237,7 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD dwAttrib)
 			}
 			break;
 		}
+		g_filestate = m_State;
 		CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": Status %d for file %s\n", status, pwszPath);
 	}
 	g_filepath.clear();

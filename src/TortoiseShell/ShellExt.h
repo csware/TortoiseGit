@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2018-2023, 2025 - TortoiseGit
+// Copyright (C) 2018-2023, 2025-2026 - TortoiseGit
 // Copyright (C) 2003-2012, 2014, 2021-2022 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -38,10 +38,12 @@ extern	DWORD				g_langid;
 extern	ULONGLONG			g_langTimeout;
 extern	HINSTANCE			g_hResInst;
 extern	CLangDll			g_langDll;
+
 extern	std::wstring		g_filepath;
 extern	git_wc_status_kind	g_filestatus;			///< holds the corresponding status to the file/dir above
 extern	bool				g_readonlyoverlay;		///< whether to show the read only overlay or not
 extern	bool				g_lockedoverlay;		///< whether to show the locked overlay or not
+extern	FileState			g_filestate;			///< filestate for which this status was initially calculated
 
 extern bool					g_normalovlloaded;
 extern bool					g_modifiedovlloaded;
