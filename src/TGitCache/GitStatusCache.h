@@ -74,6 +74,9 @@ public:
 	/// Removes all items from the cache
 	void ClearCache();
 
+	/// Clears internal "m_mostRecentPath"-cache for one path
+	void ClearShortTermShellCache(const CTGitPath& path);
+
 	/// Notifies the shell about file/folder status changes.
 	/// A notification is only sent for paths which aren't currently
 	/// in the list of handled shell requests to avoid deadlocks.

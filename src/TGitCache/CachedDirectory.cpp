@@ -473,7 +473,11 @@ CCachedDirectory::AddEntry(const CTGitPath& path, const git_wc_status2_t* pGitSt
 			}
 		}
 		else
+		{
 			entry_it = m_entryCache.insert(entry_it, std::make_pair(cachekey, CStatusCacheEntry()));
+			// No need to call UpdateShell, the shell will ask about new files on its own. But clear our internal cache.
+			CGitStatusCache::Instance().ClearShortTermShellCache(path);
+		}
 		entry_it->second = CStatusCacheEntry(pGitStatus, lastwritetime);
 		m_entryCache_tmp[cachekey] = entry_it->second;
 	}

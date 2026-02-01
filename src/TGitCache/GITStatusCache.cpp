@@ -329,10 +329,15 @@ ULONGLONG CGitStatusCache::RemoveTimedoutBlocks()
 	return timeUntilNextTimeout;
 }
 
-void CGitStatusCache::UpdateShell(const CTGitPath& path)
+void CGitStatusCache::ClearShortTermShellCache(const CTGitPath& path)
 {
 	if (path.IsEquivalentToWithoutCase(m_mostRecentPath))
 		m_mostRecentExpiresAt = 0;
+}
+
+void CGitStatusCache::UpdateShell(const CTGitPath& path)
+{
+	ClearShortTermShellCache(path);
 	m_shellUpdater.AddPathForUpdate(path);
 }
 
