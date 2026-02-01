@@ -216,7 +216,11 @@ bool CRemoteCacheLink::GetStatusFromRemoteCache(const CTGitPath& Path, TGITCache
 		// Wait for it to finish
 		DWORD dwWait = WaitForSingleObject(m_hEvent, 10000);
 		if (dwWait == WAIT_OBJECT_0)
+		{
 			fSuccess = GetOverlappedResult(m_hPipe, &m_Overlapped, &nBytesRead, FALSE);
+			if (nBytesRead != sizeof(*pReturnedStatus))
+				fSuccess = FALSE;
+		}
 		else
 		{
 			// the cache didn't respond!

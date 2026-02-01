@@ -768,7 +768,7 @@ DWORD WINAPI InstanceThread(LPVOID lpvParam)
 			&cbBytesRead, // number of bytes read
 			nullptr);        // not overlapped I/O
 
-		if (! fSuccess || cbBytesRead == 0)
+		if (!fSuccess || cbBytesRead != sizeof(request))
 		{
 			DisconnectNamedPipe(hPipe);
 			CTraceToOutputDebugString::Instance()(__FUNCTION__ ": Instance thread exited\n");
