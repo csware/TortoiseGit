@@ -179,7 +179,7 @@ bool GitAdminDir::GetWorktreeAdminDirPath(const CString& projectTopDir, CString&
 		return true;
 	}
 
-	CString sDotGitPath = CPathUtils::BuildPathWithPathDelimiter(projectTopDir) + GetAdminDirName();
+	CString sDotGitPath = CPathUtils::BuildPathWithPathDelimiter(projectTopDir) + L".git";
 	if (CTGitPath(sDotGitPath).IsDirectory())
 	{
 		adminDir = CPathUtils::BuildPathWithPathDelimiter(sDotGitPath);

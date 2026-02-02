@@ -203,7 +203,7 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD dwAttrib)
 						else
 							status = git_wc_status_none;
 					}
-					else if (CStringUtils::EndsWith(pPath, GitAdminDir::GetAdminDirName()))
+					else if (CStringUtils::EndsWith(pPath, L".git"))
 						status = git_wc_status_none;
 					else
 					{

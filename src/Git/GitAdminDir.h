@@ -1,4 +1,4 @@
-// TortoiseGit - a Windows shell extension for easy version control
+﻿// TortoiseGit - a Windows shell extension for easy version control
 
 // Copyright (C) 2008-2012, 2015-2017, 2026 - TortoiseGit
 // Copyright (C) 2003-2008 - TortoiseSVN
@@ -45,6 +45,4 @@ public:
 	static bool GetAdminDirPath(const CString& projectTopDir, CString& adminDir, bool* isWorktree = nullptr);
 	static bool GetWorktreeAdminDirPath(const CString& projectTopDir, CString& adminDir);
 	static CString ReadGitLink(const CString& topDir, const CString& dotGitPath);
-
-	static CString GetAdminDirName() { return L".git"; }
 };
