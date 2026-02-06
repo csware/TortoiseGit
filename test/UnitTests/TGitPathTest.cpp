@@ -244,9 +244,27 @@ TEST(CTGitPath, AncestorTest)
 	EXPECT_TRUE(testPath.IsAncestorOf(CTGitPath(L"c:\\windows\\test.txt")));
 	EXPECT_TRUE(testPath.IsAncestorOf(CTGitPath(L"c:\\windows\\system32\\test.txt")));
 
+	// Descendant shorter than ancestor but prefix matches
+	EXPECT_FALSE(testPath.IsAncestorOf(CTGitPath(L"c:\\wind")));
+
+	// Case-insensitive comparison
+	EXPECT_TRUE(testPath.IsAncestorOf(CTGitPath(L"C:\\Windows\\System32")));
+
+	// Non-Ascii chars are compared case sensitive
+	testPath.SetFromWin(L"c:\\wîndöws");
+	EXPECT_FALSE(testPath.IsAncestorOf(CTGitPath(L"C:\\WÎNDÖWS\\System32")));
+
+	// Drive root special case
+	testPath.SetFromWin(L"c:\\");
+	EXPECT_TRUE(testPath.IsAncestorOf(CTGitPath(L"c:\\windows")));
+	EXPECT_TRUE(testPath.IsAncestorOf(CTGitPath(L"c:\\windows\\test.txt")));
+	EXPECT_FALSE(testPath.IsAncestorOf(CTGitPath(L"d:\\windows")));
+
+	// Empty ancestor path
 	testPath.SetFromWin(L"");
 	EXPECT_FALSE(testPath.IsAncestorOf(CTGitPath(L"c:\\windows\\test.txt")));
 	EXPECT_TRUE(testPath.IsAncestorOf(CTGitPath(L"test.txt")));
+	EXPECT_TRUE(testPath.IsAncestorOf(CTGitPath(L"folder\\file.txt")));
 }
 
 /*TEST(CTGitPath, SubversionPathTest)
