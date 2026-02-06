@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2012-2023, 2025 - TortoiseGit
+// Copyright (C) 2012-2023, 2025-2026 - TortoiseGit
 // Copyright (C) 2003-2008, 2013-2015 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -451,11 +451,8 @@ CString CPathUtils::ExpandFileName(const CString& path)
 
 CString CPathUtils::NormalizePath(const CString& path)
 {
-	// Account DOS 8.3 file/folder names
-	CString nPath = GetLongPathname(path);
-
 	// Account for ..\ and .\ that may occur in each path
-	nPath = ExpandFileName(nPath);
+	CString nPath = ExpandFileName(path);
 
 	nPath.MakeLower();
 
@@ -466,7 +463,7 @@ CString CPathUtils::NormalizePath(const CString& path)
 
 bool CPathUtils::IsSamePath(const CString& path1, const CString& path2)
 {
-	return ArePathStringsEqualWithCase(NormalizePath(path1), NormalizePath(path2));
+	return ArePathStringsEqualWithCase(NormalizePath(GetLongPathname(path1)), NormalizePath(GetLongPathname(path2)));
 }
 
 bool CPathUtils::ArePathStringsEqual(const CString& sP1, const CString& sP2)

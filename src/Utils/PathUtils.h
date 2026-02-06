@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2016-2022, 2025 - TortoiseGit
+// Copyright (C) 2016-2022, 2025-2026 - TortoiseGit
 // Copyright (C) 2003-2008, 2013-2014 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -142,9 +142,8 @@ public:
 	 * It will do the following:
 	 * 1.) Modify all characters in the path to be lower case
 	 * 2.) Account for ..\'s and .\'s that may occur in the middle of the path and remove them
-	 * 3.) Expand a path that has DOS 8.3 file/folder names
-	 * 4.) Remove the trailing path delimiter at the end
-	 * The function does not account for symlinks at this point in time.
+	 * 3.) Remove the trailing path delimiter at the end
+	 * The function does not account for symlinks or DOS 8.3 file/folder names at this point in time.
 	 * \param path to normalize
 	 * \return normalized path
 	 */
