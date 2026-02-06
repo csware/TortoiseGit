@@ -163,7 +163,9 @@ public:
 	 * \remark for slash-independent comparison, use IsEquivalentTo()
 	 */
 	static bool ArePathStringsEqual(const CString& sP1, const CString& sP2);
+	static bool ArePathStringsEqual(LPCWSTR sP1, LPCWSTR sP2, int length);
 	static bool ArePathStringsEqualWithCase(const CString& sP1, const CString& sP2);
+	static bool ArePathStringsEqualWithCase(LPCWSTR sP1, LPCWSTR sP2, int length);
 
 	static CString GetCopyrightForSelf();
 
