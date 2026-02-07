@@ -77,21 +77,11 @@ bool GitAdminDir::HasAdminDir(const CString& path, bool bDir, CString* ProjectTo
 	}
 
 	// a .git dir or anything inside it should be left out, only interested in working copy files -- Myagi
-	int n = 0;
-	for (;;)
+	if (GitAdminDir::IsAdminDirPath(sDirName))
 	{
-		n = sDirName.Find(L"\\.git", n);
-		if (n < 0)
-			break;
-
-		// check for actual .git dir (and not .gitignore or something else), continue search if false match
-		n += 5;
-		if (sDirName[n] == L'\\' || sDirName[n] == 0)
-		{
-			if (IsAdminDirPath)
-				*IsAdminDirPath = true;
-			return false;
-		}
+		if (IsAdminDirPath)
+			*IsAdminDirPath = true;
+		return false;
 	}
 
 	for (;;)
@@ -236,30 +226,18 @@ CString GitAdminDir::ReadGitLink(const CString& topDir, const CString& dotGitPat
 	return adminDir;
 }
 
-bool GitAdminDir::IsAdminDirPath(const CString& path)
+bool GitAdminDir::IsAdminDirPath(const WCHAR* path, const WCHAR** found)
 {
-	if (path.IsEmpty())
-		return false;
-	bool bIsAdminDir = false;
-	CString lowerpath = path;
-	lowerpath.MakeLower();
-	int ind1 = 0;
-	while ((ind1 = lowerpath.Find(L"\\.git", ind1)) >= 0)
-	{
-		int ind = ind1++;
-		if (ind == (lowerpath.GetLength() - 5))
-		{
-			bIsAdminDir = true;
-			break;
-		}
-		else if (lowerpath.Find(L"\\.git\\", ind) >= 0)
-		{
-			bIsAdminDir = true;
-			break;
-		}
-	}
+	ATLASSERT(path);
 
-	return bIsAdminDir;
+	// Search for "\\.git\\" in the middle or "\\.git" at the end
+	if (auto pFound = wcsstr(path, L"\\.git"); pFound != nullptr && (pFound[wcslen(L"\\.git")] == L'\\' || pFound[wcslen(L"\\.git")] == L'\0'))
+	{
+		if (found)
+			*found = pFound;
+		return true;
+	}
+	return false;
 }
 
 bool GitAdminDir::IsBareRepo(const CString& path)

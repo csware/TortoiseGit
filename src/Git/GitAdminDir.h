@@ -1,6 +1,6 @@
 // TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2008-2012, 2015-2017 - TortoiseGit
+// Copyright (C) 2008-2012, 2015-2017, 2026 - TortoiseGit
 // Copyright (C) 2003-2008 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -27,7 +27,7 @@ private:
 
 public:
 	/// Returns true if the path points to or below an admin directory
-	static bool IsAdminDirPath(const CString& path);
+	static bool IsAdminDirPath(const WCHAR* path, const WCHAR** found = nullptr);
 
 	static bool IsWorkingTreeOrBareRepo(const CString& path);
 

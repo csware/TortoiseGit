@@ -252,7 +252,7 @@ void CDirectoryWatcher::WorkerThread()
 	CDirWatchInfo* pdi = nullptr;
 	LPOVERLAPPED lpOverlapped;
 	WCHAR buf[READ_DIR_CHANGE_BUFFER_SIZE] = {0};
-	WCHAR* pFound = nullptr;
+	const WCHAR* pFound = nullptr;
 	while (m_bRunning)
 	{
 		CleanupWatchInfo();
@@ -457,7 +457,7 @@ void CDirectoryWatcher::WorkerThread()
 									continue;
 								}
 
-								if ((pFound = wcsstr(buf, L"\\.git")) != nullptr && (pFound[wcslen(L"\\.git")] == L'\\' || pFound[wcslen(L"\\.git")] == L'\0')) // Is it (inside) the .git folder?
+								if (GitAdminDir::IsAdminDirPath(buf, &pFound))
 								{
 									// omit repository data change except .git/index.lock- or .git/HEAD.lock-files
 									if (reinterpret_cast<ULONG_PTR>(pnotify) - reinterpret_cast<ULONG_PTR>(pdi->m_Buffer) > READ_DIR_CHANGE_BUFFER_SIZE)

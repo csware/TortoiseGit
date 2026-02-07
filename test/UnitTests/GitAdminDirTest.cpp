@@ -105,6 +105,13 @@ TEST(CGitAdminDir, IsAdminDirPath)
 
 	EXPECT_FALSE(GitAdminDir::IsAdminDirPath(tmpDir.GetTempDir() + L"\\.gitmodules"));
 
+	{
+		LPCWSTR pos = nullptr;
+		CString dirName = tmpDir.GetTempDir() + L"\\.git";
+		EXPECT_TRUE(GitAdminDir::IsAdminDirPath(dirName, &pos));
+		EXPECT_EQ(static_cast<LPCWSTR>(dirName) + dirName.GetLength() - wcslen(L"\\.git"), pos);
+	}
+
 	ASSERT_TRUE(CreateDirectory(tmpDir.GetTempDir() + L"\\.gitted", nullptr));
 	EXPECT_FALSE(GitAdminDir::IsAdminDirPath(tmpDir.GetTempDir() + L"\\.gitted"));
 }
