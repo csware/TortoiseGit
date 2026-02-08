@@ -111,11 +111,12 @@ STDMETHODIMP CShellExt::GetPriority(int *pPriority)
 //  IShellIconOverlayIdentifier::GetOverlayInfo method to determine which icon
 //  to display."
 
-STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD /*dwAttrib*/)
+STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD dwAttrib)
 {
 	if (!pwszPath)
 		return E_INVALIDARG;
 	const wchar_t* pPath = pwszPath;
+	const bool pathIsDir = (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) != 0;
 	// the shell sometimes asks overlays for invalid paths, e.g. for network
 	// printers (in that case the path is "0", at least for me here).
 	if (wcslen(pPath) < 2)
@@ -142,7 +143,7 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD /*dwAttrib*/)
 		{
 			if ((m_State == FileStateVersioned) && g_ShellCache.ShowExcludedAsNormal() &&
 				(PathGetDriveNumber(pPath)>1) &&
-				PathIsDirectory(pPath) && g_ShellCache.HasGITAdminDir(pPath, true))
+				pathIsDir && g_ShellCache.HasGITAdminDir(pPath, true))
 			{
 				return S_OK;
 			}
@@ -159,15 +160,14 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD /*dwAttrib*/)
 		{
 		case ShellCache::exe:
 			{
-				CTGitPath tpath(pPath);
 				// the following check is only needed because TGitCache does not specially handle bare repositories
-				if (!g_ShellCache.HasGITAdminDir(pPath, tpath.IsDirectory()))
+				if (!g_ShellCache.HasGITAdminDir(pPath, pathIsDir))
 				{
 					status = git_wc_status_none;
 					break;
 				}
 				TGITCacheResponse itemStatus = { 0 };
-				if (m_remoteCacheLink.GetStatusFromRemoteCache(tpath, &itemStatus, true))
+				if (m_remoteCacheLink.GetStatusFromRemoteCache(CTGitPath(pPath, pathIsDir), &itemStatus, true))
 				{
 					if (itemStatus.m_bAssumeValid)
 						readonlyoverlay = true;
@@ -193,11 +193,7 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD /*dwAttrib*/)
 				else
 				{
 					// No cached status available
-
-					// since the dwAttrib param of the IsMemberOf() function does not
-					// have the SFGAO_FOLDER flag set at all (it's 0 for files and folders!)
-					// we have to check if the path is a folder ourselves :(
-					if (PathIsDirectory(pPath))
+					if (pathIsDir)
 					{
 						if (g_ShellCache.HasGITAdminDir(pPath, TRUE))
 						{
@@ -227,7 +223,7 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD /*dwAttrib*/)
 			{
 				// no cache means we only show a 'versioned' overlay on folders
 				// with an admin directory
-				if (PathIsDirectory(pPath))
+				if (pathIsDir)
 				{
 					if (g_ShellCache.HasGITAdminDir(pPath, TRUE))
 						status = git_wc_status_normal;
