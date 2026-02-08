@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "ShellCache.h"
 #include "GitAdminDir.h"
+#include "Git.h"
 #include "LangDll.h"
 
 ShellCache::ShellCache()
@@ -450,6 +451,33 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 			if (ProjectTopDir && iter->second.bHasAdminDir)
 				*ProjectTopDir = iter->second.sProjectRoot.c_str();
 			return iter->second.bHasAdminDir;
+		}
+	}
+
+	// When explorer calls CShellExt::IsMemberOf for a lot of subfolders, the cache above won't be
+	// effective because folders can be their own repository. But most of the time they are not and
+	// we don't want to waste time searching for ".git" in all our parent folders in that common case.
+	// So, for subfolders with no ".git" inside them, we check the cache again for their parent folder.
+	// This way, all CShellExt::IsMemberOf calls for a given folder will check the cache for that folder
+	// and GitAdminDir::HasAdminDir has to be called at most once.
+	if (bIsDir)
+	{
+		if (size_t pos = folder.rfind(L'\\'); pos != std::wstring::npos)
+		{
+			if (!CGit::GitPathFileExists(CString(folder.c_str()) + L"\\.git"))
+			{
+				folder.erase(pos);
+				if ((iter = admindircache.find(folder)) != admindircache.cend())
+				{
+					Locker lock(m_critSec);
+					if ((GetTickCount64() - iter->second.timeout) < ADMINDIRTIMEOUT)
+					{
+						if (ProjectTopDir && iter->second.bHasAdminDir)
+							*ProjectTopDir = iter->second.sProjectRoot.c_str();
+						return iter->second.bHasAdminDir;
+					}
+				}
+			}
 		}
 	}
 
