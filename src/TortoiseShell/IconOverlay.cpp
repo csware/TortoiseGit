@@ -160,12 +160,8 @@ STDMETHODIMP CShellExt::IsMemberOf(LPCWSTR pwszPath, DWORD /*dwAttrib*/)
 		case ShellCache::exe:
 			{
 				CTGitPath tpath(pPath);
-				if(!tpath.HasAdminDir())
-				{
-					status = git_wc_status_none;
-					break;
-				}
-				if(tpath.IsAdminDir())
+				// the following check is only needed because TGitCache does not specially handle bare repositories
+				if (!g_ShellCache.HasGITAdminDir(pPath, tpath.IsDirectory()))
 				{
 					status = git_wc_status_none;
 					break;
