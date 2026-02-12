@@ -225,6 +225,7 @@ public:
 	UINT  drivetypecache[27];
 	wchar_t drivetypepathcache[MAX_PATH]{}; // MAX_PATH ok.
 	std::map<std::wstring, AdminDir_s> admindircache;
+	ULONGLONG nextAdmindircacheCleanupTime = 0;
 	CRegStdString nocontextpaths;
 	std::wstring excludecontextstr;
 	std::vector<std::wstring> excontextvector;

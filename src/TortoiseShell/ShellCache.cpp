@@ -435,6 +435,14 @@ DWORD ShellCache::GetLangID()
 
 BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDir /*= nullptr*/)
 {
+	const ULONGLONG now = GetTickCount64();
+	if (now >= nextAdmindircacheCleanupTime)
+	{
+		// Clear stale elements in admindircache every now and then
+		nextAdmindircacheCleanupTime = now + 10 * 60 * 1000; // 10 minutes
+		std::erase_if(admindircache, [now](const auto& pair) { return (now - pair.second.timeout) >= ADMINDIRTIMEOUT; });
+	}
+
 	std::wstring folder(path);
 	if (!bIsDir)
 	{
@@ -446,7 +454,7 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 	if ((iter = admindircache.find(folder)) != admindircache.cend())
 	{
 		Locker lock(m_critSec);
-		if ((GetTickCount64() - iter->second.timeout) < ADMINDIRTIMEOUT)
+		if ((now - iter->second.timeout) < ADMINDIRTIMEOUT)
 		{
 			if (ProjectTopDir && iter->second.bHasAdminDir)
 				*ProjectTopDir = iter->second.sProjectRoot.c_str();
@@ -470,7 +478,7 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 				if ((iter = admindircache.find(folder)) != admindircache.cend())
 				{
 					Locker lock(m_critSec);
-					if ((GetTickCount64() - iter->second.timeout) < ADMINDIRTIMEOUT)
+					if ((now - iter->second.timeout) < ADMINDIRTIMEOUT)
 					{
 						if (ProjectTopDir && iter->second.bHasAdminDir)
 							*ProjectTopDir = iter->second.sProjectRoot.c_str();
@@ -487,7 +495,7 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 	Locker lock(m_critSec);
 	AdminDir_s& ad = admindircache[folder];
 	ad.bHasAdminDir = hasAdminDir;
-	ad.timeout = GetTickCount64();
+	ad.timeout = now;
 	if (hasAdminDir)
 	{
 		ad.sProjectRoot.assign(sProjectRoot);
