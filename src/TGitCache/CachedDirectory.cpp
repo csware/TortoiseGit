@@ -536,8 +536,15 @@ BOOL CCachedDirectory::GetStatusCallback(const CString& path, const git_wc_statu
 					}
 					if (crawl && dirEntry && dirEntry->m_ownStatus.GetEffectiveStatus() == git_wc_status_ignored && pGitStatus->status != git_wc_status_ignored)
 					{
-						// subfolder is not longer ignored. Reset status so the fast ignore path is skipped during crawling.
+						// subfolder is no longer ignored. Reset status so the fast ignore path is skipped during crawling.
 						dirEntry->m_ownStatus = git_wc_status_none;
+					}
+					if (crawl && !dirEntry && GitAdminDir::IsBareRepo(gitPath.GetWinPathString()))
+					{
+						// Skip crawling of nested non-ignored bare directories
+						// This isn't quite correct if the bare repo isn't ignored in our repo, but the shell overlay
+						// doesn't display modified state in the bare repo anyway, so we might as well skip crawling.
+						crawl = false;
 					}
 					if (crawl)
 						CGitStatusCache::Instance().AddFolderForCrawling(gitPath);
