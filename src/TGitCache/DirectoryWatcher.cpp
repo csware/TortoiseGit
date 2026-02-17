@@ -396,7 +396,7 @@ void CDirectoryWatcher::WorkerThread()
 				if (pdi)
 				{
 					BOOL bRet = false;
-					std::list<CTGitPath> notifyPaths;
+					UniqueQueue<CTGitPath> notifyPaths; // Duplicate notifications are quite common, so we deduplicate them
 					{
 						AutoLocker lock(m_critSec);
 						// in case the CDirectoryWatcher objects have been cleaned,
@@ -487,11 +487,7 @@ void CDirectoryWatcher::WorkerThread()
 								}
 
 								CTGitPath path(buf);
-								if (!path.HasAdminDir())
-									continue;
-
-								CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": change notification for %s\n", buf);
-								notifyPaths.push_back(path);
+								notifyPaths.Push(path);
 							}
 						} while ((nOffset > 0)&&(nOffset < READ_DIR_CHANGE_BUFFER_SIZE));
 
@@ -507,11 +503,39 @@ void CDirectoryWatcher::WorkerThread()
 							&pdi->m_Overlapped,
 							nullptr); //no completion routine!
 					}
-					if (!notifyPaths.empty())
+
+					struct cache
 					{
-						for (auto nit = notifyPaths.cbegin(); nit != notifyPaths.cend(); ++nit)
+						bool available = false;
+						CTGitPath dir;
+						CString topDir;
+						bool hasAdminDir = false;
+					} cache;
+					while (!notifyPaths.empty())
+					{
+						CTGitPath path = notifyPaths.Pop();
+						const bool useCache = cache.available && cache.dir == path.GetDirectoryOrParentIfDeleted();
+						if (useCache)
 						{
-							m_FolderCrawler->AddPathForUpdate(*nit);
+							// The file/folder in this path is in the same folder as the last path was in.
+							// That means the topDir must also be the same, so we can use the cached information.
+							path.SetHasAdminDir(cache.hasAdminDir, cache.topDir);
+						}
+						const bool hasAdminDir = path.HasAdminDir();
+						if (hasAdminDir)
+						{
+							CTraceToOutputDebugString::Instance()(_T(__FUNCTION__) L": change notification for %s\n", path.GetWinPath());
+							m_FolderCrawler->AddPathForUpdate(path);
+						}
+						if (!useCache && !notifyPaths.empty())
+						{
+							// We just calculated the topDir by hand. That's a bit expensive,
+							// so we cache it here just in case the next path is in the same
+							// folder.
+							cache.dir = path.GetDirectoryOrParentIfDeleted();
+							path.HasAdminDir(&cache.topDir);
+							cache.hasAdminDir = hasAdminDir;
+							cache.available = true;
 						}
 					}
 

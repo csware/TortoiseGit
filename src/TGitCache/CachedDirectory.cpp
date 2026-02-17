@@ -536,8 +536,15 @@ BOOL CCachedDirectory::GetStatusCallback(const CString& path, const git_wc_statu
 					}
 					if (crawl && dirEntry && dirEntry->m_ownStatus.GetEffectiveStatus() == git_wc_status_ignored && pGitStatus->status != git_wc_status_ignored)
 					{
-						// subfolder is not longer ignored. Reset status so the fast ignore path is skipped during crawling.
+						// subfolder is no longer ignored. Reset status so the fast ignore path is skipped during crawling.
 						dirEntry->m_ownStatus = git_wc_status_none;
+					}
+					if (crawl && !dirEntry && GitAdminDir::IsBareRepo(gitPath.GetWinPathString()))
+					{
+						// Skip crawling of nested non-ignored bare directories
+						// This isn't quite correct if the bare repo isn't ignored in our repo, but the shell overlay
+						// doesn't display modified state in the bare repo anyway, so we might as well skip crawling.
+						crawl = false;
 					}
 					if (crawl)
 						CGitStatusCache::Instance().AddFolderForCrawling(gitPath);
@@ -624,9 +631,11 @@ void CCachedDirectory::UpdateCurrentStatus()
 	if(!parentPath.IsEmpty())
 	{
 		// We have a parent
-		// just version controled directory need to cache.
-		CString root1, root2;
-		if (parentPath.HasAdminDir(&root1) && (CGitStatusCache::Instance().IsRecurseSubmodules() || m_directoryPath.HasAdminDir(&root2) && CPathUtils::ArePathStringsEqualWithCase(root1, root2)))
+		// just version controlled directory need to cache.
+		CString ownRoot;
+		m_directoryPath.HasAdminDir(&ownRoot);
+		const bool sameRoot = !CPathUtils::ArePathStringsEqualWithCase(m_directoryPath.GetWinPathString(), ownRoot); // If our directory is different than our root, our parent must have the same root.
+		if (sameRoot || (CGitStatusCache::Instance().IsRecurseSubmodules() && parentPath.HasAdminDir()))
 		{
 			CCachedDirectory * cachedDir = CGitStatusCache::Instance().GetDirectoryCacheEntry(parentPath);
 			if (cachedDir)

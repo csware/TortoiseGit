@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2008-2023, 2025 - TortoiseGit
+// Copyright (C) 2008-2023, 2025-2026 - TortoiseGit
 // Copyright (C) 2003-2008, 2025 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -425,6 +425,12 @@ void CTGitPath::Reset()
 CTGitPath CTGitPath::GetDirectory() const
 {
 	if ((IsDirectory())||(!Exists()))
+		return *this;
+	return GetContainingDirectory();
+}
+CTGitPath CTGitPath::GetDirectoryOrParentIfDeleted() const
+{
+	if (IsDirectory() && Exists())
 		return *this;
 	return GetContainingDirectory();
 }
@@ -918,6 +924,16 @@ bool CTGitPath::HasAdminDir(CString* ProjectTopDir /* = nullptr */, bool force /
 	if (ProjectTopDir)
 		*ProjectTopDir = m_sProjectRoot;
 	return m_bHasAdminDir;
+}
+
+void CTGitPath::SetHasAdminDir(bool hasAdminDir, const CString& projectTopDir) const
+{
+	m_bHasAdminDir = hasAdminDir;
+	if (hasAdminDir)
+		m_sProjectRoot = projectTopDir;
+	else
+		m_sProjectRoot.Empty();
+	m_bHasAdminDirKnown = true;
 }
 
 bool CTGitPath::IsAdminDir() const

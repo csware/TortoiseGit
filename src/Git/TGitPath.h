@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2008-2025 - TortoiseGit
+// Copyright (C) 2008-2026 - TortoiseGit
 // Copyright (C) 2003-2008, 2014 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -124,6 +124,8 @@ public:
 	 */
 	bool IsDirectory() const;
 
+	bool IsDirectoryKnown() const { return m_bDirectoryKnown; }
+
 	CTGitPath GetSubPath(const CTGitPath &root) const;
 
 	/**
@@ -132,6 +134,11 @@ public:
 	 * parent directory is returned.
 	 */
 	CTGitPath GetDirectory() const;
+	/**
+	 * Same as above, except in the case that the path points to nothing (to a deleted file/folder).
+	 * In that case GetDirectory returns the path unchanged and GetDirectoryOrParentIfDeleted returns the path to the parent.
+	 */
+	CTGitPath GetDirectoryOrParentIfDeleted() const;
 	/**
 	* Returns the directory which contains the item the path refers to.
 	* If the path is a directory, then this returns the directory above it.
@@ -246,6 +253,7 @@ public:
 	 * contains an admin directory.
 	 */
 	bool HasAdminDir(CString* projectTopDir = nullptr, bool force = false) const;
+	void SetHasAdminDir(bool hasAdminDir, const CString& projectTopDir) const;
 	bool HasSubmodules() const;
 	bool HasGitSVNDir() const;
 	bool IsBisectActive() const;

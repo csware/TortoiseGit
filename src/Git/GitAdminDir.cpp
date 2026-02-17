@@ -1,6 +1,6 @@
 ﻿// TortoiseGit - a Windows shell extension for easy version control
 
-// Copyright (C) 2008-2017, 2019, 2023, 2025 - TortoiseGit
+// Copyright (C) 2008-2017, 2019, 2023, 2025-2026 - TortoiseGit
 // Copyright (C) 2003-2008 - TortoiseSVN
 
 // This program is free software; you can redistribute it and/or
@@ -122,8 +122,13 @@ bool GitAdminDir::HasAdminDir(const CString& path, bool bDir, CString* ProjectTo
 
 			return true;
 		}
+#ifndef TGITCACHE
+		// If there is a bare repo inside a regular repo, this needs to return false so that:
+		// - GetAdminDirMask() returns 0 causing the context menu of the outer repo to not be shown
+		// - CShellExt::IsMemberOf shows no overlays inside the bare repo
 		else if (IsBareRepo(sDirName))
 			return false;
+#endif
 
 		const int x = sDirName.ReverseFind(L'\\');
 		if (x < 2)
