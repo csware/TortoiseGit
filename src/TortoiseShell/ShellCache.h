@@ -183,7 +183,7 @@ private:
 	{
 		BOOL bHasAdminDir = false;
 		std::wstring sProjectRoot;
-		ULONGLONG timeout = ADMINDIRTIMEOUT;
+		ULONGLONG timeout = 0;
 	};
 
 public:
