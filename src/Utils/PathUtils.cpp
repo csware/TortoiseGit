@@ -474,11 +474,17 @@ bool CPathUtils::ArePathStringsEqual(const CString& sP1, const CString& sP2)
 		// Different lengths
 		return false;
 	}
+	return CPathUtils::ArePathStringsEqual(sP1, sP2, length);
+}
+
+bool CPathUtils::ArePathStringsEqual(LPCWSTR sP1, LPCWSTR sP2, int length)
+{
+	assert(sP1 && sP2);
+
 	// We work from the end of the strings, because path differences
 	// are more likely to occur at the far end of a string
-	LPCWSTR pP1Start = sP1;
-	LPCWSTR pP1 = pP1Start + (length - 1);
-	LPCWSTR pP2 = static_cast<LPCWSTR>(sP2) + (length - 1);
+	LPCWSTR pP1 = sP1 + (length - 1);
+	LPCWSTR pP2 = sP2 + (length - 1);
 	while (length-- > 0)
 	{
 		if (_totlower(*pP1--) != _totlower(*pP2--))
@@ -495,11 +501,17 @@ bool CPathUtils::ArePathStringsEqualWithCase(const CString& sP1, const CString& 
 		// Different lengths
 		return false;
 	}
+	return CPathUtils::ArePathStringsEqualWithCase(sP1, sP2, length);
+}
+
+bool CPathUtils::ArePathStringsEqualWithCase(LPCWSTR sP1, LPCWSTR sP2, int length)
+{
+	assert(sP1 && sP2);
+
 	// We work from the end of the strings, because path differences
 	// are more likely to occur at the far end of a string
-	LPCWSTR pP1Start = sP1;
-	LPCWSTR pP1 = pP1Start + (length - 1);
-	LPCWSTR pP2 = static_cast<LPCWSTR>(sP2) + (length - 1);
+	LPCWSTR pP1 = sP1 + (length - 1);
+	LPCWSTR pP2 = sP2 + (length - 1);
 	while (length-- > 0)
 	{
 		if ((*pP1--) != (*pP2--))

@@ -562,15 +562,17 @@ bool CTGitPath::IsAncestorOf(const CTGitPath& possibleDescendant) const
 	if (m_sBackslashPath.IsEmpty() && PathIsRelative(possibleDescendant.m_sBackslashPath))
 		return true;
 
-	bool bPathStringsEqual = CPathUtils::ArePathStringsEqual(m_sBackslashPath, possibleDescendant.m_sBackslashPath.Left(m_sBackslashPath.GetLength()));
-	if (m_sBackslashPath.GetLength() >= possibleDescendant.GetWinPathString().GetLength())
-	{
-		return bPathStringsEqual;
-	}
+	if (m_sBackslashPath.GetLength() > possibleDescendant.m_sBackslashPath.GetLength())
+		return false;
 
-	return (bPathStringsEqual &&
-			((possibleDescendant.m_sBackslashPath[m_sBackslashPath.GetLength()] == '\\')||
-			(m_sBackslashPath.GetLength()==3 && m_sBackslashPath[1]==':')));
+	if (!CPathUtils::ArePathStringsEqual(m_sBackslashPath, possibleDescendant.m_sBackslashPath, m_sBackslashPath.GetLength()))
+		return false;
+
+	if (m_sBackslashPath.GetLength() == possibleDescendant.m_sBackslashPath.GetLength())
+		return true;
+
+	return possibleDescendant.m_sBackslashPath[m_sBackslashPath.GetLength()] == L'\\' ||
+			(m_sBackslashPath.GetLength() == 3 && m_sBackslashPath[1] == L':');
 }
 
 // Get a string representing the file path, optionally with a base
