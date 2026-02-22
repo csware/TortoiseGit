@@ -450,10 +450,9 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 		if (pos != std::wstring::npos)
 			folder.erase(pos);
 	}
-	std::map<std::wstring, AdminDir_s>::const_iterator iter;
 	{
 		Locker lock(m_critSec);
-		if ((iter = admindircache.find(folder)) != admindircache.cend())
+		if (const auto iter = admindircache.find(folder); iter != admindircache.cend())
 		{
 			if (now < iter->second.timeout)
 			{
@@ -478,7 +477,7 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 			{
 				folder.erase(pos);
 				Locker lock(m_critSec);
-				if ((iter = admindircache.find(folder)) != admindircache.cend())
+				if (const auto iter = admindircache.find(folder); iter != admindircache.cend())
 				{
 					if (now < iter->second.timeout)
 					{
