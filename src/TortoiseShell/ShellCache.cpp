@@ -451,14 +451,16 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 			folder.erase(pos);
 	}
 	std::map<std::wstring, AdminDir_s>::const_iterator iter;
-	if ((iter = admindircache.find(folder)) != admindircache.cend())
 	{
 		Locker lock(m_critSec);
-		if ((now - iter->second.timeout) < ADMINDIRTIMEOUT)
+		if ((iter = admindircache.find(folder)) != admindircache.cend())
 		{
-			if (ProjectTopDir && iter->second.bHasAdminDir)
-				*ProjectTopDir = iter->second.sProjectRoot.c_str();
-			return iter->second.bHasAdminDir;
+			if ((now - iter->second.timeout) < ADMINDIRTIMEOUT)
+			{
+				if (ProjectTopDir && iter->second.bHasAdminDir)
+					*ProjectTopDir = iter->second.sProjectRoot.c_str();
+				return iter->second.bHasAdminDir;
+			}
 		}
 	}
 
@@ -475,9 +477,9 @@ BOOL ShellCache::HasGITAdminDir(LPCWSTR path, BOOL bIsDir, CString* ProjectTopDi
 			if (CString folderString(folder.c_str()); !CGit::GitPathFileExists(folderString + L"\\.git") && !GitAdminDir::IsBareRepo(folderString))
 			{
 				folder.erase(pos);
+				Locker lock(m_critSec);
 				if ((iter = admindircache.find(folder)) != admindircache.cend())
 				{
-					Locker lock(m_critSec);
 					if ((now - iter->second.timeout) < ADMINDIRTIMEOUT)
 					{
 						if (ProjectTopDir && iter->second.bHasAdminDir)
