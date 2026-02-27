@@ -61,7 +61,7 @@ public:
 
 	// prevent cloning
 	ShellCache(const ShellCache&) = delete;
-	void operator=(const ShellCache&) = delete;
+	ShellCache& operator=(const ShellCache&) = delete;
 
 	bool RefreshIfNeeded();
 
